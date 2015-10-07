@@ -21,14 +21,14 @@ namespace WowPacketParser.SQL.Builders
 
             const string tableName = "broadcast_text_locale";
 
-            var rowsIns = new List<QueryBuilder.SQLInsertRow>();
-            var rowsUpd = new List<QueryBuilder.SQLUpdateRow>();
+            var rowsIns = new List<SQLInsertRow>();
+            var rowsUpd = new List<SQLUpdateRow>();
 
             foreach (var broadcastTextLocale in Settings.SQLOrderByKey ? Storage.BroadcastTextLocales.OrderBy(blub => blub.Key).ToList() : Storage.BroadcastTextLocales.ToList())
             {
                 if (SQLDatabase.BroadcastTextLocaleStores != null && SQLDatabase.BroadcastTextLocaleStores.ContainsKey(Tuple.Create(broadcastTextLocale.Key.Item1, broadcastTextLocale.Key.Item2)))
                 {
-                    var row = new QueryBuilder.SQLUpdateRow();
+                    var row = new SQLUpdateRow();
                     var broadcastTextLocaleDB = SQLDatabase.BroadcastTextLocaleStores[Tuple.Create(broadcastTextLocale.Key.Item1, broadcastTextLocale.Key.Item2)];
 
                     if (!Utilities.EqualValues(broadcastTextLocaleDB.MaleText_lang, broadcastTextLocale.Value.Item1.MaleText_lang))
@@ -49,7 +49,7 @@ namespace WowPacketParser.SQL.Builders
                 }
                 else // insert new
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
 
                     row.AddValue("ID", broadcastTextLocale.Key.Item1);
                     row.AddValue("locale", broadcastTextLocale.Key.Item2);
@@ -63,8 +63,8 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            var result = new QueryBuilder.SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 2).Build() +
-                         new QueryBuilder.SQLUpdate(rowsUpd).Build();
+            var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 2).Build() +
+                         new SQLUpdate(rowsUpd).Build();
 
             return "SET NAMES 'utf8';" + Environment.NewLine + result + Environment.NewLine + "SET NAMES 'latin1';";
         }
@@ -80,14 +80,14 @@ namespace WowPacketParser.SQL.Builders
 
             const string tableName = "quest_template_locale";
 
-            var rowsIns = new List<QueryBuilder.SQLInsertRow>();
-            var rowsUpd = new List<QueryBuilder.SQLUpdateRow>();
+            var rowsIns = new List<SQLInsertRow>();
+            var rowsUpd = new List<SQLUpdateRow>();
 
             foreach (var localesQuest in Settings.SQLOrderByKey ? Storage.LocalesQuests.OrderBy(blub => blub.Key).ToList() : Storage.LocalesQuests.ToList())
             {
                 if (SQLDatabase.LocalesQuestStores != null && SQLDatabase.LocalesQuestStores.ContainsKey(Tuple.Create(localesQuest.Key.Item1, localesQuest.Key.Item2)))
                 {
-                    var row = new QueryBuilder.SQLUpdateRow();
+                    var row = new SQLUpdateRow();
                     var localesQuestDB = SQLDatabase.LocalesQuestStores[Tuple.Create(localesQuest.Key.Item1, localesQuest.Key.Item2)];
 
                     if (!Utilities.EqualValues(localesQuestDB.LogTitle, localesQuest.Value.Item1.LogTitle))
@@ -129,7 +129,7 @@ namespace WowPacketParser.SQL.Builders
                 }
                 else // insert new
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
 
                     row.AddValue("ID", localesQuest.Key.Item1);
                     row.AddValue("locale", localesQuest.Key.Item2);
@@ -150,8 +150,8 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            var result = new QueryBuilder.SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 2).Build() +
-                         new QueryBuilder.SQLUpdate(rowsUpd).Build();
+            var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 2).Build() +
+                         new SQLUpdate(rowsUpd).Build();
 
             return "SET NAMES 'utf8';" + Environment.NewLine + result + Environment.NewLine + "SET NAMES 'latin1';";
         }
@@ -167,14 +167,14 @@ namespace WowPacketParser.SQL.Builders
 
             const string tableName = "quest_objectives_locale";
 
-            var rowsIns = new List<QueryBuilder.SQLInsertRow>();
-            var rowsUpd = new List<QueryBuilder.SQLUpdateRow>();
+            var rowsIns = new List<SQLInsertRow>();
+            var rowsUpd = new List<SQLUpdateRow>();
 
             foreach (var localesQuestObjective in Settings.SQLOrderByKey ? Storage.LocalesQuestObjectives.OrderBy(blub => blub.Key).ToList() : Storage.LocalesQuestObjectives.ToList())
             {
                 if (SQLDatabase.LocalesQuestObjectiveStores != null && SQLDatabase.LocalesQuestObjectiveStores.ContainsKey(Tuple.Create(localesQuestObjective.Key.Item1, localesQuestObjective.Key.Item2)))
                 {
-                    var row = new QueryBuilder.SQLUpdateRow();
+                    var row = new SQLUpdateRow();
                     var localesQuestObjectiveDB = SQLDatabase.LocalesQuestObjectiveStores[Tuple.Create(localesQuestObjective.Key.Item1, localesQuestObjective.Key.Item2)];
 
                     if (!Utilities.EqualValues(localesQuestObjectiveDB.QuestId, localesQuestObjective.Value.Item1.QuestId))
@@ -198,7 +198,7 @@ namespace WowPacketParser.SQL.Builders
                 }
                 else // insert new
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
 
                     row.AddValue("ID", localesQuestObjective.Key.Item1);
                     row.AddValue("locale", localesQuestObjective.Key.Item2);
@@ -213,8 +213,8 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            var result = new QueryBuilder.SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 2).Build() +
-                         new QueryBuilder.SQLUpdate(rowsUpd).Build();
+            var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 2).Build() +
+                         new SQLUpdate(rowsUpd).Build();
 
             return "SET NAMES 'utf8';" + Environment.NewLine + result + Environment.NewLine + "SET NAMES 'latin1';";
         }

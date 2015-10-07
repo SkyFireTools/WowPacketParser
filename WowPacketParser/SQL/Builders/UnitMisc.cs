@@ -25,7 +25,7 @@ namespace WowPacketParser.SQL.Builders
 
             const string tableName = "creature_template_addon";
 
-            var rows = new List<QueryBuilder.SQLInsertRow>();
+            var rows = new List<SQLInsertRow>();
             foreach (var unit in units)
             {
                 var npc = unit.Value;
@@ -38,7 +38,7 @@ namespace WowPacketParser.SQL.Builders
                     if (!(npc.Map.ToString(CultureInfo.InvariantCulture).MatchesFilters(Settings.MapFilters)))
                         continue;
 
-                var row = new QueryBuilder.SQLInsertRow();
+                var row = new SQLInsertRow();
                 row.AddValue("entry", unit.Key.GetEntry());
                 row.AddValue("mount", npc.Mount);
                 row.AddValue("bytes1", npc.Bytes1, true);
@@ -72,7 +72,7 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            return new QueryBuilder.SQLInsert(tableName, rows).Build();
+            return new SQLInsert(tableName, rows).Build();
         }
 
         [BuilderMethod(Units = true)]
@@ -133,17 +133,17 @@ namespace WowPacketParser.SQL.Builders
 
             const string tableName = "npc_trainer";
 
-            var rows = new List<QueryBuilder.SQLInsertRow>();
+            var rows = new List<SQLInsertRow>();
             foreach (var npcTrainer in Storage.NpcTrainers)
             {
-                var comment = new QueryBuilder.SQLInsertRow
+                var comment = new SQLInsertRow
                 {
                     HeaderComment = StoreGetters.GetName(StoreNameType.Unit, (int) npcTrainer.Key, false)
                 };
                 rows.Add(comment);
                 foreach (var trainerSpell in npcTrainer.Value.Item1.TrainerSpells)
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
                     row.AddValue("ID", npcTrainer.Key);
                     row.AddValue("SpellID", trainerSpell.Spell);
                     row.AddValue("MoneyCost", trainerSpell.Cost);
@@ -155,7 +155,7 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new QueryBuilder.SQLInsert(tableName, rows).Build();
+            return new SQLInsert(tableName, rows).Build();
         }
 
         [BuilderMethod]
@@ -169,17 +169,17 @@ namespace WowPacketParser.SQL.Builders
 
             const string tableName = "npc_vendor";
 
-            var rows = new List<QueryBuilder.SQLInsertRow>();
+            var rows = new List<SQLInsertRow>();
             foreach (var npcVendor in Storage.NpcVendors)
             {
-                var comment = new QueryBuilder.SQLInsertRow
+                var comment = new SQLInsertRow
                 {
                     HeaderComment = StoreGetters.GetName(StoreNameType.Unit, (int) npcVendor.Key)
                 };
                 rows.Add(comment);
                 foreach (var vendorItem in npcVendor.Value.Item1.VendorItems)
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
                     row.AddValue("entry", npcVendor.Key);
                     row.AddValue("item", vendorItem.ItemId);
                     row.AddValue("slot", vendorItem.Slot);
@@ -202,7 +202,7 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new QueryBuilder.SQLInsert(tableName, rows).Build();
+            return new SQLInsert(tableName, rows).Build();
         }
 
         [BuilderMethod(Units = true)]
@@ -270,10 +270,10 @@ namespace WowPacketParser.SQL.Builders
 
             const string tableName = "creature_movement";
 
-            var rows = new List<QueryBuilder.SQLInsertRow>();
+            var rows = new List<SQLInsertRow>();
             foreach (var unit in units)
             {
-                var row = new QueryBuilder.SQLInsertRow();
+                var row = new SQLInsertRow();
 
                 var npc = unit.Value;
 
@@ -294,7 +294,7 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            return new QueryBuilder.SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();
+            return new SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();
         }
 
         //public static string CreatureXP(Dictionary<Guid, Unit> units)
@@ -314,10 +314,10 @@ namespace WowPacketParser.SQL.Builders
             // Not TDB structure
             const string tableName = "LootTemplate";
 
-            var rows = new List<QueryBuilder.SQLInsertRow>();
+            var rows = new List<SQLInsertRow>();
             foreach (var loot in Storage.Loots)
             {
-                var comment = new QueryBuilder.SQLInsertRow
+                var comment = new SQLInsertRow
                 {
                     HeaderComment =
                         StoreGetters.GetName(Utilities.ObjectTypeToStore(Storage.Loots.Keys().First().Item2),
@@ -327,7 +327,7 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(comment);
                 foreach (var lootItem in loot.Value.Item1.LootItems)
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
                     row.AddValue("Id", loot.Key.Item1);
                     row.AddValue("Type", loot.Key.Item2);
                     row.AddValue("ItemId", lootItem.ItemId);
@@ -338,7 +338,7 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new QueryBuilder.SQLInsert(tableName, rows, 2).Build();
+            return new SQLInsert(tableName, rows, 2).Build();
         }
 
         [BuilderMethod]
@@ -366,7 +366,7 @@ namespace WowPacketParser.SQL.Builders
                     }
                     query.Remove(query.Length - 4, 4).Append(";");
 
-                    var rows = new List<QueryBuilder.SQLInsertRow>();
+                    var rows = new List<SQLInsertRow>();
                     using (var reader = SQLConnector.ExecuteQuery(query.ToString()))
                     {
                         if (reader != null)
@@ -383,7 +383,7 @@ namespace WowPacketParser.SQL.Builders
                                 // our table is small, 2 fields and both are PKs; no need for updates
                                 if (!Storage.Gossips.ContainsKey(Tuple.Create(entry, textId)))
                                 {
-                                    var row = new QueryBuilder.SQLInsertRow();
+                                    var row = new SQLInsertRow();
                                     row.AddValue("entry", entry);
                                     row.AddValue("text_id", textId);
                                     row.Comment = StoreGetters.GetName(StoreNameType.Unit,
@@ -393,14 +393,14 @@ namespace WowPacketParser.SQL.Builders
                                 }
                             }
                     }
-                    result += new QueryBuilder.SQLInsert("gossip_menu", rows, 2).Build();
+                    result += new SQLInsert("gossip_menu", rows, 2).Build();
                 }
                 else
                 {
-                    var rows = new List<QueryBuilder.SQLInsertRow>();
+                    var rows = new List<SQLInsertRow>();
                     foreach (var gossip in Storage.Gossips)
                     {
-                        var row = new QueryBuilder.SQLInsertRow();
+                        var row = new SQLInsertRow();
 
                         row.AddValue("entry", gossip.Key.Item1);
                         row.AddValue("text_id", gossip.Key.Item2);
@@ -410,7 +410,7 @@ namespace WowPacketParser.SQL.Builders
                         rows.Add(row);
                     }
 
-                    result += new QueryBuilder.SQLInsert("gossip_menu", rows, 2).Build();
+                    result += new SQLInsert("gossip_menu", rows, 2).Build();
                 }
             }
 
@@ -419,8 +419,8 @@ namespace WowPacketParser.SQL.Builders
             {
                 if (SQLConnector.Enabled)
                 {
-                    var rowsIns = new List<QueryBuilder.SQLInsertRow>();
-                    var rowsUpd = new List<QueryBuilder.SQLUpdateRow>();
+                    var rowsIns = new List<SQLInsertRow>();
+                    var rowsUpd = new List<SQLUpdateRow>();
 
                     foreach (var gossip in Storage.Gossips)
                     {
@@ -441,7 +441,7 @@ namespace WowPacketParser.SQL.Builders
                                 {
                                     while (reader.Read())
                                     {
-                                        var row = new QueryBuilder.SQLUpdateRow();
+                                        var row = new SQLUpdateRow();
 
                                         if (!Utilities.EqualValues(reader.GetValue(2), gossipOption.OptionIcon))
                                             row.AddValue("option_icon", gossipOption.OptionIcon);
@@ -474,7 +474,7 @@ namespace WowPacketParser.SQL.Builders
                                 }
                                 else // insert
                                 {
-                                    var row = new QueryBuilder.SQLInsertRow();
+                                    var row = new SQLInsertRow();
 
                                     row.AddValue("menu_id", gossip.Key.Item1);
                                     row.AddValue("id", gossipOption.Index);
@@ -493,18 +493,18 @@ namespace WowPacketParser.SQL.Builders
                             }
                         }
                     }
-                    result += new QueryBuilder.SQLInsert("gossip_menu_option", rowsIns, 2).Build() +
-                              new QueryBuilder.SQLUpdate(rowsUpd).Build();
+                    result += new SQLInsert("gossip_menu_option", rowsIns, 2).Build() +
+                              new SQLUpdate(rowsUpd).Build();
                 }
                 else
                 {
-                    var rows = new List<QueryBuilder.SQLInsertRow>();
+                    var rows = new List<SQLInsertRow>();
                     foreach (var gossip in Storage.Gossips)
                     {
                         if (gossip.Value.Item1.GossipOptions != null)
                             foreach (var gossipOption in gossip.Value.Item1.GossipOptions)
                             {
-                                var row = new QueryBuilder.SQLInsertRow();
+                                var row = new SQLInsertRow();
 
                                 row.AddValue("menu_id", gossip.Key.Item1);
                                 row.AddValue("id", gossipOption.Index);
@@ -522,7 +522,7 @@ namespace WowPacketParser.SQL.Builders
                             }
                     }
 
-                    result += new QueryBuilder.SQLInsert("gossip_menu_option", rows, 2).Build();
+                    result += new SQLInsert("gossip_menu_option", rows, 2).Build();
                 }
             }
 
@@ -556,11 +556,11 @@ namespace WowPacketParser.SQL.Builders
                     }
                 }
 
-                var rowsUpd = new List<QueryBuilder.SQLUpdateRow>();
+                var rowsUpd = new List<SQLUpdateRow>();
 
                 foreach (var u in gossipPOIsTable)
                 {
-                    var row = new QueryBuilder.SQLUpdateRow();
+                    var row = new SQLUpdateRow();
 
                     row.AddValue("action_poi_id", u.Value);
 
@@ -572,19 +572,19 @@ namespace WowPacketParser.SQL.Builders
                     rowsUpd.Add(row);
                 }
 
-                result += new QueryBuilder.SQLUpdate(rowsUpd).Build();
+                result += new SQLUpdate(rowsUpd).Build();
             }
 
             if (Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.points_of_interest))
             {
                 const string tableName = "points_of_interest";
-                var rowsIns = new List<QueryBuilder.SQLInsertRow>();
+                var rowsIns = new List<SQLInsertRow>();
 
                 uint count = 0;
 
                 foreach (var poi in Storage.GossipPOIs)
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
 
                     row.AddValue("ID", "@ID+" + count, noQuotes: true);
                     row.AddValue("PositionX", poi.Value.Item1.PositionX);
@@ -598,8 +598,8 @@ namespace WowPacketParser.SQL.Builders
                     count++;
                 }
 
-                result += new QueryBuilder.SQLDelete(Tuple.Create("@ID+0", "@ID+" + (count - 1)), "entry", tableName).Build();
-                result += new QueryBuilder.SQLInsert(tableName, rowsIns, withDelete: false).Build();
+                result += new SQLDelete(Tuple.Create("@ID+0", "@ID+" + (count - 1)), "entry", tableName).Build();
+                result += new SQLInsert(tableName, rowsIns, withDelete: false).Build();
             }
 
             return result;
@@ -973,12 +973,12 @@ namespace WowPacketParser.SQL.Builders
 
             const string tableName = "creature_text";
 
-            var rows = new List<QueryBuilder.SQLInsertRow>();
+            var rows = new List<SQLInsertRow>();
             foreach (var text in Storage.CreatureTexts)
             {
                 foreach (var textValue in text.Value)
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
 
                     row.AddValue("entry", text.Key);
                     row.AddValue("groupid", "x", false, true);
@@ -997,7 +997,7 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new QueryBuilder.SQLInsert(tableName, rows, 1, false).Build();
+            return new SQLInsert(tableName, rows, 1, false).Build();
         }
 
         [BuilderMethod]
@@ -1011,12 +1011,12 @@ namespace WowPacketParser.SQL.Builders
 
             const string tableName = "vehicle_template_accessory";
 
-            var rows = new List<QueryBuilder.SQLInsertRow>();
+            var rows = new List<SQLInsertRow>();
             foreach (var accessorys in Storage.VehicleTemplateAccessorys)
             {
                 foreach (var accessorysValue in accessorys.Value)
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
 
                     if (accessorysValue.Item1.SeatId < 0 || accessorysValue.Item1.SeatId > 7)
                         continue;
@@ -1036,7 +1036,7 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new QueryBuilder.SQLInsert(tableName, rows, 1, false).Build();
+            return new SQLInsert(tableName, rows, 1, false).Build();
         }
 
         [BuilderMethod]
@@ -1049,13 +1049,13 @@ namespace WowPacketParser.SQL.Builders
                 return string.Empty;
 
             const string tableName = "npc_spellclick_spells";
-            var rows = new List<QueryBuilder.SQLInsertRow>();
+            var rows = new List<SQLInsertRow>();
 
             foreach (var npcSpellClick in Storage.NpcSpellClicks)
             {
                 foreach (var spellClick in Storage.SpellClicks)
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
 
                     if (spellClick.Item1.CasterGUID.GetObjectType() == ObjectType.Unit && spellClick.Item1.TargetGUID.GetObjectType() == ObjectType.Unit)
                         spellClick.Item1.CastFlags = 0x0;
@@ -1077,7 +1077,7 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new QueryBuilder.SQLInsert(tableName, rows, 1, false).Build();
+            return new SQLInsert(tableName, rows, 1, false).Build();
         }
 
         [BuilderMethod(Units = true)]
@@ -1090,11 +1090,11 @@ namespace WowPacketParser.SQL.Builders
                 return string.Empty;
 
             const string tableName = "npc_spellclick_spells";
-            var rows = new List<QueryBuilder.SQLInsertRow>();
+            var rows = new List<SQLInsertRow>();
 
             foreach (var unit in units)
             {
-                var row = new QueryBuilder.SQLInsertRow();
+                var row = new SQLInsertRow();
 
                 var npc = unit.Value;
                 if (npc.InteractSpellID == null)
@@ -1116,7 +1116,7 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            return new QueryBuilder.SQLInsert(tableName, rows, 1, false).Build();
+            return new SQLInsert(tableName, rows, 1, false).Build();
         }
     }
 }

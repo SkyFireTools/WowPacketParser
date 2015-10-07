@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
+using MySql.Data.MySqlClient;
 using Wintellect.PowerCollections;
 using WowPacketParser.Enums;
 using WowPacketParser.Misc;
@@ -16,39 +18,46 @@ namespace WowPacketParser.SQL
         /// <summary>
         /// Represents a dictionary of ID-Name dictionaries accessed by <see cref="StoreNameType"/>.
         /// </summary>
-        public static readonly Dictionary<StoreNameType, Dictionary<int, string>> NameStores = new Dictionary<StoreNameType, Dictionary<int, string>>();
+        public static readonly Dictionary<StoreNameType, Dictionary<int, string>> NameStores =
+            new Dictionary<StoreNameType, Dictionary<int, string>>();
 
         /// <summary>
         /// Represents a list of broadcast id-<see cref="BroadcastText"/> tuples.
         /// </summary>
-        public static readonly ICollection<Tuple<uint, BroadcastText>> BroadcastTextStores = new List<Tuple<uint, BroadcastText>>();
+        public static readonly ICollection<Tuple<uint, BroadcastText>> BroadcastTextStores =
+            new List<Tuple<uint, BroadcastText>>();
 
         /// <summary>
         /// Represents a dictionary of <see cref="CreatureDifficulty"/> accessed by their ids.
         /// </summary>
-        public static readonly Dictionary<uint, CreatureDifficulty> CreatureDifficultyStores = new Dictionary<uint, CreatureDifficulty>();
+        public static readonly Dictionary<uint, CreatureDifficulty> CreatureDifficultyStores =
+            new Dictionary<uint, CreatureDifficulty>();
 
         // Locale
         /// <summary>
         /// Represents a dictionary of <see cref="BroadcastTextLocale"/> accessed by a tuple of the broadcast text id and the locale string.
         /// </summary>
-        public static readonly Dictionary<Tuple<uint, string>, BroadcastTextLocale> BroadcastTextLocaleStores = new Dictionary<Tuple<uint, string>, BroadcastTextLocale>();
+        public static readonly Dictionary<Tuple<uint, string>, BroadcastTextLocale> BroadcastTextLocaleStores =
+            new Dictionary<Tuple<uint, string>, BroadcastTextLocale>();
 
         /// <summary>
         /// Represents a dictionary of <see cref="LocalesQuest"/> accessed by a tuple of the quest id and the locale string.
         /// </summary>
-        public static readonly Dictionary<Tuple<uint, string>, LocalesQuest> LocalesQuestStores = new Dictionary<Tuple<uint, string>, LocalesQuest>();
+        public static readonly Dictionary<Tuple<uint, string>, LocalesQuest> LocalesQuestStores =
+            new Dictionary<Tuple<uint, string>, LocalesQuest>();
 
         /// <summary>
         /// Represents a dictionary of <see cref="LocalesQuestObjectives"/> accessed by a tuple of the quest objective id and the locale string.
         /// </summary>
-        public static readonly Dictionary<Tuple<uint, string>, LocalesQuestObjectives> LocalesQuestObjectiveStores = new Dictionary<Tuple<uint, string>, LocalesQuestObjectives>();
+        public static readonly Dictionary<Tuple<uint, string>, LocalesQuestObjectives> LocalesQuestObjectiveStores =
+            new Dictionary<Tuple<uint, string>, LocalesQuestObjectives>();
 
         // MapDifficulty
         /// <summary>
         /// Represents a dictionary of map difficulties accessed by a tuple of the id and the map id.
         /// </summary>
-        private static readonly Dictionary<Tuple<int, int>, int> MapDifficultyStores = new Dictionary<Tuple<int, int>, int>();
+        private static readonly Dictionary<Tuple<int, int>, int> MapDifficultyStores =
+            new Dictionary<Tuple<int, int>, int>();
 
         /// <summary>
         /// Represents a dictionary of spawn masks accessed by the map id.
@@ -189,8 +198,8 @@ namespace WowPacketParser.SQL
         private static void LoadQuestTemplateLocale()
         {
             string query = "SELECT Id, locale, " +
-                        "LogTitle, LogDescription, QuestDescription, AreaDescription, PortraitGiverText, PortraitGiverName, PortraitTurnInText, PortraitTurnInName, QuestCompletionLog, VerifiedBuild" +
-                        $" FROM {Settings.TDBDatabase}.quest_template_locale;";
+                           "LogTitle, LogDescription, QuestDescription, AreaDescription, PortraitGiverText, PortraitGiverName, PortraitTurnInText, PortraitTurnInName, QuestCompletionLog, VerifiedBuild" +
+                           $" FROM {Settings.TDBDatabase}.quest_template_locale;";
             using (var reader = SQLConnector.ExecuteQuery(query))
             {
                 if (reader == null)
@@ -327,6 +336,91 @@ namespace WowPacketParser.SQL
             }
         }
 
+        [Obsolete("Only for legacy code.")]
+        private static string GetTableName<T>()
+        {
+            var tableAttrs =
+                (DBTableNameAttribute[])typeof(T).GetCustomAttributes(typeof(DBTableNameAttribute), false);
+            return tableAttrs.Length <= 0 ? null : tableAttrs[0].Name;
+        }
+
+        [Obsolete("Only for legacy code.")]
+        private static List<Tuple<FieldInfo, DBFieldNameAttribute>> GetFields<T>()
+        {
+            var fields = Utilities.GetFieldsAndAttribute<T, DBFieldNameAttribute>();
+            fields.RemoveAll(field => field.Item2.Name == null);
+            return fields;
+        }
+
+        private static object[] GetValues(MySqlDataReader reader, int fieldCount)
+        {
+            var values = new object[fieldCount];
+            int count = reader.GetValues(values);
+            if (count != fieldCount)
+                throw new InvalidConstraintException(
+                    "Number of fields from DB is different of the number of fields with DBFieldName attribute");
+            return values;
+        }
+
+        public static List<T> Get<T>(ConditionsList<T> conditionList = null, string database = null)
+            where T : IDataModel
+        {
+            // TODO: Add new config option "Verify data against DB"
+            if (!SQLConnector.Enabled)
+                return null;
+
+            List<T> result = new List<T>(conditionList?.Count ?? 0);
+
+            using (var reader = SQLConnector.ExecuteQuery(new SQLSelect<T>(conditionList, database).Build()))
+            {
+                if (reader == null)
+                    return null;
+
+                var fields = SQLUtil.GetFields<T>();
+
+                while (reader.Read())
+                {
+                    T instance = (T)Activator.CreateInstance(typeof(T));
+                    var values = GetValues(reader, SQLUtil.GetFields<T>().Count);
+
+                    int i = 0;
+                    foreach (var field in fields)
+                    {
+                        if (values[i] is DBNull && field.Item1.FieldType == typeof(string))
+                            field.Item1.SetValue(instance, string.Empty);
+                        else if (field.Item1.FieldType.BaseType == typeof(Enum))
+                            field.Item1.SetValue(instance, Enum.Parse(field.Item1.FieldType, values[i].ToString()));
+                        else if (field.Item1.FieldType.BaseType == typeof(Array))
+                        {
+                            var arr = Array.CreateInstance(field.Item1.FieldType.GetElementType(), field.Item2.Count);
+
+                            for (var j = 0; j < arr.Length; j++)
+                            {
+                                var elemType = arr.GetType().GetElementType();
+
+                                var val = elemType.IsEnum
+                                    ? Enum.Parse(elemType, values[i + j].ToString())
+                                    : Convert.ChangeType(values[i + j], elemType);
+
+                                arr.SetValue(val, j);
+                            }
+                            field.Item1.SetValue(instance, arr);
+                        }
+                        else if (field.Item1.FieldType == typeof(bool))
+                            field.Item1.SetValue(instance, Convert.ToBoolean(values[i]));
+                        else
+                            field.Item1.SetValue(instance, values[i]);
+
+                        i += field.Item2.Count;
+                    }
+
+                    result.Add(instance);
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Gets from `world` database a dictionary of the given struct/class.
         /// Structs fields type must match the type of the DB columns.
@@ -338,7 +432,8 @@ namespace WowPacketParser.SQL
         /// <param name="primaryKeyName">Name of the primary key</param>
         /// <param name="database">Database name. If null <see cref="Settings.TDBDatabase"/> is used</param>
         /// <returns>Dictionary of structs of type TK</returns>
-        public static StoreDictionary<T, TK> GetDict<T, TK>(List<T> entries, string primaryKeyName = "entry", string database = null)
+        public static StoreDictionary<T, TK> GetDict<T, TK>(List<T> entries, string primaryKeyName = "entry",
+            string database = null)
         {
             if (entries.Count == 0)
                 return null;
@@ -347,15 +442,10 @@ namespace WowPacketParser.SQL
             if (!SQLConnector.Enabled)
                 return null;
 
-            var tableAttrs = (DBTableNameAttribute[])typeof(TK).GetCustomAttributes(typeof(DBTableNameAttribute), false);
-            if (tableAttrs.Length <= 0)
-                return null;
-            var tableName = tableAttrs[0].Name;
+            string tableName = GetTableName<TK>();
+            var fields = GetFields<TK>();
 
-            var fields = Utilities.GetFieldsAndAttribute<TK, DBFieldNameAttribute>();
-            fields.RemoveAll(field => field.Item2.Name == null);
-
-            var fieldCount = 1;
+            int fieldCount = 1;
             var fieldNames = new StringBuilder();
             fieldNames.Append(SQLUtil.AddBackQuotes(primaryKeyName) + ",");
             foreach (var field in fields)
@@ -366,7 +456,8 @@ namespace WowPacketParser.SQL
             }
 
             var query = string.Format("SELECT {0} FROM {1}.{2} WHERE {3} IN ({4})",
-                fieldNames.ToString().TrimEnd(','), database ?? Settings.TDBDatabase, tableName, primaryKeyName, String.Join(",", entries));
+                fieldNames.ToString().TrimEnd(','), database ?? Settings.TDBDatabase, tableName, primaryKeyName,
+                String.Join(",", entries));
 
             var dict = new Dictionary<T, TK>(entries.Count);
 
@@ -377,21 +468,17 @@ namespace WowPacketParser.SQL
 
                 while (reader.Read())
                 {
-                    var instance = (TK)Activator.CreateInstance(typeof(TK));
+                    TK instance = (TK)Activator.CreateInstance(typeof(TK));
+                    var values = GetValues(reader, fieldCount);
 
-                    var values = new object[fieldCount];
-                    var count = reader.GetValues(values);
-                    if (count != fieldCount)
-                        throw new InvalidConstraintException(
-                            "Number of fields from DB is different of the number of fields with DBFieldName attribute");
-
-                    var i = 1;
+                    int i = 1;
                     foreach (var field in fields)
                     {
                         if (values[i] is DBNull && field.Item1.FieldType == typeof(string))
                             field.Item1.SetValueDirect(__makeref(instance), string.Empty);
                         else if (field.Item1.FieldType.BaseType == typeof(Enum))
-                            field.Item1.SetValueDirect(__makeref(instance), Enum.Parse(field.Item1.FieldType, values[i].ToString()));
+                            field.Item1.SetValueDirect(__makeref(instance),
+                                Enum.Parse(field.Item1.FieldType, values[i].ToString()));
                         else if (field.Item1.FieldType.BaseType == typeof(Array))
                         {
                             var arr = Array.CreateInstance(field.Item1.FieldType.GetElementType(), field.Item2.Count);
@@ -400,9 +487,9 @@ namespace WowPacketParser.SQL
                             {
                                 var elemType = arr.GetType().GetElementType();
 
-                                var val = elemType.IsEnum ?
-                                    Enum.Parse(elemType, values[i + j].ToString()) :
-                                    Convert.ChangeType(values[i + j], elemType);
+                                var val = elemType.IsEnum
+                                    ? Enum.Parse(elemType, values[i + j].ToString())
+                                    : Convert.ChangeType(values[i + j], elemType);
 
                                 arr.SetValue(val, j);
                             }
@@ -438,7 +525,8 @@ namespace WowPacketParser.SQL
         /// <param name="primaryKeyName2">Name of the second primary key</param>
         /// <param name="database">Database name. If null <see cref="Settings.TDBDatabase"/> is used</param>
         /// <returns>Dictionary of structs of type TK</returns>
-        public static StoreDictionary<Tuple<T, TG>, TK> GetDict<T, TG, TK>(List<Tuple<T, TG>> entries, string primaryKeyName1, string primaryKeyName2, string database = null)
+        public static StoreDictionary<Tuple<T, TG>, TK> GetDict<T, TG, TK>(List<Tuple<T, TG>> entries,
+            string primaryKeyName1, string primaryKeyName2, string database = null)
             where T : struct
             where TG : struct
         {
@@ -449,15 +537,10 @@ namespace WowPacketParser.SQL
             if (!SQLConnector.Enabled)
                 return null;
 
-            var tableAttrs = (DBTableNameAttribute[])typeof(TK).GetCustomAttributes(typeof(DBTableNameAttribute), false);
-            if (tableAttrs.Length <= 0)
-                return null;
-            var tableName = tableAttrs[0].Name;
+            string tableName = GetTableName<TK>();
+            var fields = GetFields<TK>();
 
-            var fields = Utilities.GetFieldsAndAttribute<TK, DBFieldNameAttribute>();
-            fields.RemoveAll(field => field.Item2.Name == null);
-
-            var fieldCount = 2;
+            int fieldCount = 2;
             var fieldNames = new StringBuilder();
             fieldNames.Append(primaryKeyName1 + ",");
             fieldNames.Append(primaryKeyName2 + ",");
@@ -500,13 +583,8 @@ namespace WowPacketParser.SQL
 
                 while (reader.Read())
                 {
-                    var instance = (TK)Activator.CreateInstance(typeof(TK));
-
-                    var values = new object[fieldCount];
-                    var count = reader.GetValues(values);
-                    if (count != fieldCount)
-                        throw new InvalidConstraintException(
-                            "Number of fields from DB is different of the number of fields with DBFieldName attribute");
+                    TK instance = (TK)Activator.CreateInstance(typeof(TK));
+                    var values = GetValues(reader, fieldCount);
 
                     var i = 2;
                     foreach (var field in fields)
@@ -514,7 +592,8 @@ namespace WowPacketParser.SQL
                         if (values[i] is DBNull && field.Item1.FieldType == typeof(string))
                             field.Item1.SetValueDirect(__makeref(instance), string.Empty);
                         else if (field.Item1.FieldType.BaseType == typeof(Enum))
-                            field.Item1.SetValueDirect(__makeref(instance), Enum.Parse(field.Item1.FieldType, values[i].ToString()));
+                            field.Item1.SetValueDirect(__makeref(instance),
+                                Enum.Parse(field.Item1.FieldType, values[i].ToString()));
                         else if (field.Item1.FieldType.BaseType == typeof(Array))
                         {
                             var arr = Array.CreateInstance(field.Item1.FieldType.GetElementType(), field.Item2.Count);
@@ -523,9 +602,9 @@ namespace WowPacketParser.SQL
                             {
                                 var elemType = arr.GetType().GetElementType();
 
-                                var val = elemType.IsEnum ?
-                                    Enum.Parse(elemType, values[i + j].ToString()) :
-                                    Convert.ChangeType(values[i + j], elemType);
+                                var val = elemType.IsEnum
+                                    ? Enum.Parse(elemType, values[i + j].ToString())
+                                    : Convert.ChangeType(values[i + j], elemType);
 
                                 arr.SetValue(val, j);
                             }
@@ -541,11 +620,11 @@ namespace WowPacketParser.SQL
 
                     T key1;
                     TG key2;
-                    if (typeof (T).IsEnum)
-                        key1 = (T) Enum.ToObject(typeof (T), values[0]);
+                    if (typeof(T).IsEnum)
+                        key1 = (T)Enum.ToObject(typeof(T), values[0]);
                     else
-                        key1 = (T) values[0];
-                    if (typeof (TG).IsEnum)
+                        key1 = (T)values[0];
+                    if (typeof(TG).IsEnum)
                         key2 = (TG)Enum.ToObject(typeof(TG), values[1]);
                     else
                         key2 = (TG)values[1];
@@ -574,7 +653,8 @@ namespace WowPacketParser.SQL
         /// <param name="primaryKeyName3">Name of the third primary key</param>
         /// <param name="database">Database name. If null <see cref="Settings.TDBDatabase"/> is used</param>
         /// <returns>Dictionary of structs of type TK</returns>
-        public static StoreDictionary<Tuple<T, TG, TH>, TK> GetDict<T, TG, TH, TK>(List<Tuple<T, TG, TH>> entries, string primaryKeyName1, string primaryKeyName2, string primaryKeyName3, string database = null)
+        public static StoreDictionary<Tuple<T, TG, TH>, TK> GetDict<T, TG, TH, TK>(List<Tuple<T, TG, TH>> entries,
+            string primaryKeyName1, string primaryKeyName2, string primaryKeyName3, string database = null)
             where T : struct
             where TG : struct
             where TH : struct
@@ -586,15 +666,10 @@ namespace WowPacketParser.SQL
             if (!SQLConnector.Enabled)
                 return null;
 
-            var tableAttrs = (DBTableNameAttribute[])typeof(TK).GetCustomAttributes(typeof(DBTableNameAttribute), false);
-            if (tableAttrs.Length <= 0)
-                return null;
-            var tableName = tableAttrs[0].Name;
+            string tableName = GetTableName<TK>();
+            var fields = GetFields<TK>();
 
-            var fields = Utilities.GetFieldsAndAttribute<TK, DBFieldNameAttribute>();
-            fields.RemoveAll(field => field.Item2.Name == null);
-
-            var fieldCount = 3;
+            int fieldCount = 3;
             var fieldNames = new StringBuilder();
             fieldNames.Append(primaryKeyName1 + ",");
             fieldNames.Append(primaryKeyName2 + ",");
@@ -642,13 +717,8 @@ namespace WowPacketParser.SQL
 
                 while (reader.Read())
                 {
-                    var instance = (TK)Activator.CreateInstance(typeof(TK));
-
-                    var values = new object[fieldCount];
-                    var count = reader.GetValues(values);
-                    if (count != fieldCount)
-                        throw new InvalidConstraintException(
-                            "Number of fields from DB is different of the number of fields with DBFieldName attribute");
+                    TK instance = (TK)Activator.CreateInstance(typeof(TK));
+                    var values = GetValues(reader, fieldCount);
 
                     var i = 3;
                     foreach (var field in fields)
@@ -656,7 +726,8 @@ namespace WowPacketParser.SQL
                         if (values[i] is DBNull && field.Item1.FieldType == typeof(string))
                             field.Item1.SetValueDirect(__makeref(instance), string.Empty);
                         else if (field.Item1.FieldType.BaseType == typeof(Enum))
-                            field.Item1.SetValueDirect(__makeref(instance), Enum.Parse(field.Item1.FieldType, values[i].ToString()));
+                            field.Item1.SetValueDirect(__makeref(instance),
+                                Enum.Parse(field.Item1.FieldType, values[i].ToString()));
                         else if (field.Item1.FieldType.BaseType == typeof(Array))
                         {
                             var arr = Array.CreateInstance(field.Item1.FieldType.GetElementType(), field.Item2.Count);
@@ -665,9 +736,9 @@ namespace WowPacketParser.SQL
                             {
                                 var elemType = arr.GetType().GetElementType();
 
-                                var val = elemType.IsEnum ?
-                                    Enum.Parse(elemType, values[i + j].ToString()) :
-                                    Convert.ChangeType(values[i + j], elemType);
+                                var val = elemType.IsEnum
+                                    ? Enum.Parse(elemType, values[i + j].ToString())
+                                    : Convert.ChangeType(values[i + j], elemType);
 
                                 arr.SetValue(val, j);
                             }
@@ -684,11 +755,11 @@ namespace WowPacketParser.SQL
                     T key1;
                     TG key2;
                     TH key3;
-                    if (typeof (T).IsEnum)
-                        key1 = (T) Enum.ToObject(typeof (T), values[0]);
+                    if (typeof(T).IsEnum)
+                        key1 = (T)Enum.ToObject(typeof(T), values[0]);
                     else
-                        key1 = (T) values[0];
-                    if (typeof (TG).IsEnum)
+                        key1 = (T)values[0];
+                    if (typeof(TG).IsEnum)
                         key2 = (TG)Enum.ToObject(typeof(TG), values[1]);
                     else
                         key2 = (TG)values[1];
@@ -706,7 +777,8 @@ namespace WowPacketParser.SQL
             return new StoreDictionary<Tuple<T, TG, TH>, TK>(dict);
         }
 
-        public static StoreMulti<Tuple<T, TG>, TK> GetDictMulti<T, TG, TK>(List<Tuple<T, TG>> entries, string primaryKeyName1, string primaryKeyName2)
+        public static StoreMulti<Tuple<T, TG>, TK> GetDictMulti<T, TG, TK>(List<Tuple<T, TG>> entries,
+            string primaryKeyName1, string primaryKeyName2)
         {
             if (entries.Count == 0)
                 return null;
@@ -715,15 +787,10 @@ namespace WowPacketParser.SQL
             if (!SQLConnector.Enabled)
                 return null;
 
-            var tableAttrs = (DBTableNameAttribute[])typeof(TK).GetCustomAttributes(typeof(DBTableNameAttribute), false);
-            if (tableAttrs.Length <= 0)
-                return null;
-            var tableName = tableAttrs[0].Name;
+            string tableName = GetTableName<TK>();
+            var fields = GetFields<TK>();
 
-            var fields = Utilities.GetFieldsAndAttribute<TK, DBFieldNameAttribute>();
-            fields.RemoveAll(field => field.Item2.Name == null);
-
-            var fieldCount = 2;
+            int fieldCount = 2;
             var fieldNames = new StringBuilder();
             fieldNames.Append(primaryKeyName1 + ",");
             fieldNames.Append(primaryKeyName2 + ",");
@@ -766,13 +833,8 @@ namespace WowPacketParser.SQL
 
                 while (reader.Read())
                 {
-                    var instance = (TK)Activator.CreateInstance(typeof(TK));
-
-                    var values = new object[fieldCount];
-                    var count = reader.GetValues(values);
-                    if (count != fieldCount)
-                        throw new InvalidConstraintException(
-                            "Number of fields from DB is different of the number of fields with DBFieldName attribute");
+                    TK instance = (TK)Activator.CreateInstance(typeof(TK));
+                    var values = GetValues(reader, fieldCount);
 
                     var i = 2;
                     foreach (var field in fields)
@@ -780,7 +842,8 @@ namespace WowPacketParser.SQL
                         if (values[i] is DBNull && field.Item1.FieldType == typeof(string))
                             field.Item1.SetValueDirect(__makeref(instance), string.Empty);
                         else if (field.Item1.FieldType.BaseType == typeof(Enum))
-                            field.Item1.SetValueDirect(__makeref(instance), Enum.Parse(field.Item1.FieldType, values[i].ToString()));
+                            field.Item1.SetValueDirect(__makeref(instance),
+                                Enum.Parse(field.Item1.FieldType, values[i].ToString()));
                         else if (field.Item1.FieldType.BaseType == typeof(Array))
                         {
                             var arr = Array.CreateInstance(field.Item1.FieldType.GetElementType(), field.Item2.Count);

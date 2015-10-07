@@ -55,8 +55,8 @@ namespace WowPacketParser.SQL.Builders
 
             result += SQLUtil.CompareDicts(Storage.QuestObjectives, templatesDb, StoreNameType.QuestObjective, "Id");
 
-            var rowsIns = new List<QueryBuilder.SQLInsertRow>();
-            var rowsUpd = new List<QueryBuilder.SQLUpdateRow>();
+            var rowsIns = new List<SQLInsertRow>();
+            var rowsUpd = new List<SQLUpdateRow>();
 
             foreach (var questObjectives in Storage.QuestObjectives)
             {
@@ -73,7 +73,7 @@ namespace WowPacketParser.SQL.Builders
                             {
                                 while (reader.Read())
                                 {
-                                    var row = new QueryBuilder.SQLUpdateRow();
+                                    var row = new SQLUpdateRow();
 
                                     if (!Utilities.EqualValues(reader.GetValue(0), visualEffectIds.VisualEffect))
                                         row.AddValue("VisualEffect", visualEffectIds.VisualEffect);
@@ -92,7 +92,7 @@ namespace WowPacketParser.SQL.Builders
                             }
                             else // insert
                             {
-                                var row = new QueryBuilder.SQLInsertRow();
+                                var row = new SQLInsertRow();
 
                                 row.AddValue("Id", questObjectives.Key);
                                 row.AddValue("Index", visualEffectIds.Index);
@@ -105,7 +105,7 @@ namespace WowPacketParser.SQL.Builders
                     }
                     else // insert
                     {
-                        var row = new QueryBuilder.SQLInsertRow();
+                        var row = new SQLInsertRow();
 
                         row.AddValue("Id", questObjectives.Key);
                         row.AddValue("Index", visualEffectIds.Index);
@@ -117,7 +117,7 @@ namespace WowPacketParser.SQL.Builders
                 }
              }
 
-            result += new QueryBuilder.SQLInsert("quest_visual_effect", rowsIns, 2).Build() + new QueryBuilder.SQLUpdate(rowsUpd).Build();
+            result += new SQLInsert("quest_visual_effect", rowsIns, 2).Build() + new SQLUpdate(rowsUpd).Build();
 
             return result;
         }
@@ -152,7 +152,7 @@ namespace WowPacketParser.SQL.Builders
 
             if (SQLConnector.Enabled)
             {
-                var rowsUpd = new List<QueryBuilder.SQLUpdateRow>();
+                var rowsUpd = new List<SQLUpdateRow>();
 
                 foreach (var npcName in Storage.UnitTemplates)
                 {
@@ -165,7 +165,7 @@ namespace WowPacketParser.SQL.Builders
                         {
                             while (reader.Read())
                             {
-                                var row = new QueryBuilder.SQLUpdateRow();
+                                var row = new SQLUpdateRow();
 
                                 if (!Utilities.EqualValues(reader.GetValue(0), npcName.Value.Item1.Name))
                                     row.AddValue("name", npcName.Value.Item1.Name);
@@ -184,7 +184,7 @@ namespace WowPacketParser.SQL.Builders
                     }
                 }
 
-                result += new QueryBuilder.SQLUpdate(rowsUpd).Build();
+                result += new SQLUpdate(rowsUpd).Build();
             }
 
             return result;

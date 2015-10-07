@@ -161,19 +161,6 @@ namespace WowPacketParser.Misc
             return true;
         }
 
-        public static string GetCompressedFileExtension(FileCompression value)
-        {
-            FieldInfo fi = value.GetType().GetField(value.ToString());
-
-            FileCompressionAttribute[] attributes =
-                (FileCompressionAttribute[])fi.GetCustomAttributes(typeof(FileCompressionAttribute), false);
-
-            if (attributes.Length == 0)
-                throw new NotImplementedException();
-
-            return attributes[0].Extension;
-        }
-
         /// <summary>
         /// Compares two objects (values) with special cases for floats and strings
         /// </summary>
@@ -253,7 +240,7 @@ namespace WowPacketParser.Misc
         /// </summary>
         /// <param name="byteCount">Number of bytes</param>
         /// <returns>String with byte suffix</returns>
-        public static String BytesToString(long byteCount)
+        public static string BytesToString(long byteCount)
         {
             string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
             if (byteCount == 0)

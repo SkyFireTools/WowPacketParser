@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using MySql.Data.MySqlClient;
 using WowPacketParser.Enums;
@@ -114,9 +115,6 @@ namespace WowPacketParser.SQL
         /// <returns></returns>
         public static object ToSQLValue(object value, bool isFlag = false, bool noQuotes = false)
         {
-            //if (value == null)
-            //    return value; // mhmmm
-
             if (value is string && !noQuotes)
                 value = Stringify(value);
 
@@ -125,8 +123,7 @@ namespace WowPacketParser.SQL
 
             if (value is Enum)
             {
-                var enumType = value.GetType();
-                var undertype = Enum.GetUnderlyingType(enumType);
+                var undertype = Enum.GetUnderlyingType(value.GetType());
                 value = Convert.ChangeType(value, undertype);
             }
 
@@ -137,6 +134,25 @@ namespace WowPacketParser.SQL
                 value = Hexify((uint)value);
 
             return value;
+        }
+
+        public static string GetTableName<T>() where T : IDataModel
+        {
+            var tableAttrs =
+                (DBTableNameAttribute[])typeof(T).GetCustomAttributes(typeof(DBTableNameAttribute), false);
+            if (tableAttrs.Length > 0)
+                return tableAttrs[0].Name;
+
+            //convert CamelCase name to camel_case
+            string name = typeof(T).Name;
+            return string.Concat(name.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString().ToLower() : x.ToString().ToLower()));
+        }
+
+        public static List<Tuple<FieldInfo, DBFieldNameAttribute>> GetFields<T>() where T : IDataModel
+        {
+            var fields = Utilities.GetFieldsAndAttribute<T, DBFieldNameAttribute>();
+            fields.RemoveAll(field => field.Item2.Name == null);
+            return fields;
         }
 
         /// <summary>
@@ -165,14 +181,14 @@ namespace WowPacketParser.SQL
 
             fields.RemoveAll(field => field.Item2.Name == null);
 
-            var rowsIns = new List<QueryBuilder.SQLInsertRow>();
-            var rowsUpd = new List<QueryBuilder.SQLUpdateRow>();
+            var rowsIns = new List<SQLInsertRow>();
+            var rowsUpd = new List<SQLUpdateRow>();
 
             foreach (var elem1 in Settings.SQLOrderByKey ? dict1.OrderBy(blub => blub.Key).ToList() : dict1.ToList())
             {
                 if (dict2 != null && dict2.ContainsKey(elem1.Key)) // update
                 {
-                    var row = new QueryBuilder.SQLUpdateRow();
+                    var row = new SQLUpdateRow();
 
                     foreach (var field in fields)
                     {
@@ -230,7 +246,7 @@ namespace WowPacketParser.SQL
                 }
                 else // insert new
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
                     row.AddValue(primaryKeyName, elem1.Key);
                     row.Comment = StoreGetters.GetName(storeType, Convert.ToInt32(elem1.Key), false);
 
@@ -258,8 +274,8 @@ namespace WowPacketParser.SQL
                 }
             }
 
-            var result = new QueryBuilder.SQLInsert(tableName, rowsIns, deleteDuplicates: false).Build() +
-                         new QueryBuilder.SQLUpdate(rowsUpd).Build();
+            var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false).Build() +
+                         new SQLUpdate(rowsUpd).Build();
 
             return result;
         }
@@ -293,14 +309,14 @@ namespace WowPacketParser.SQL
 
             fields.RemoveAll(field => field.Item2.Name == null);
 
-            var rowsIns = new List<QueryBuilder.SQLInsertRow>();
-            var rowsUpd = new List<QueryBuilder.SQLUpdateRow>();
+            var rowsIns = new List<SQLInsertRow>();
+            var rowsUpd = new List<SQLUpdateRow>();
 
             foreach (var elem1 in Settings.SQLOrderByKey ? dict1.OrderBy(blub => blub.Key).ToList() : dict1.ToList())
             {
                 if (dict2 != null && dict2.ContainsKey(elem1.Key)) // update
                 {
-                    var row = new QueryBuilder.SQLUpdateRow();
+                    var row = new SQLUpdateRow();
 
                     foreach (var field in fields)
                     {
@@ -365,7 +381,7 @@ namespace WowPacketParser.SQL
                 }
                 else // insert new
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
                     row.AddValue(primaryKeyName1, elem1.Key.Item1);
                     row.AddValue(primaryKeyName2, elem1.Key.Item2);
 
@@ -405,8 +421,8 @@ namespace WowPacketParser.SQL
                 }
             }
 
-            var result = new QueryBuilder.SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 2).Build() +
-                         new QueryBuilder.SQLUpdate(rowsUpd).Build();
+            var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 2).Build() +
+                         new SQLUpdate(rowsUpd).Build();
 
             return result;
         }
@@ -443,14 +459,14 @@ namespace WowPacketParser.SQL
 
             fields.RemoveAll(field => field.Item2.Name == null);
 
-            var rowsIns = new List<QueryBuilder.SQLInsertRow>();
-            var rowsUpd = new List<QueryBuilder.SQLUpdateRow>();
+            var rowsIns = new List<SQLInsertRow>();
+            var rowsUpd = new List<SQLUpdateRow>();
 
             foreach (var elem1 in Settings.SQLOrderByKey ? dict1.OrderBy(blub => blub.Key).ToList() : dict1.ToList())
             {
                 if (dict2 != null && dict2.ContainsKey(elem1.Key)) // update
                 {
-                    var row = new QueryBuilder.SQLUpdateRow();
+                    var row = new SQLUpdateRow();
 
                     foreach (var field in fields)
                     {
@@ -520,7 +536,7 @@ namespace WowPacketParser.SQL
                 }
                 else // insert new
                 {
-                    var row = new QueryBuilder.SQLInsertRow();
+                    var row = new SQLInsertRow();
                     row.AddValue(primaryKeyName1, elem1.Key.Item1);
                     row.AddValue(primaryKeyName2, elem1.Key.Item2);
                     row.AddValue(primaryKeyName3, elem1.Key.Item3);
@@ -565,8 +581,8 @@ namespace WowPacketParser.SQL
                 }
             }
 
-            var result = new QueryBuilder.SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 3).Build() +
-                         new QueryBuilder.SQLUpdate(rowsUpd).Build();
+            var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 3).Build() +
+                         new SQLUpdate(rowsUpd).Build();
 
             return result;
         }
