@@ -167,7 +167,9 @@ namespace WowPacketParser.SQL.Builders
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_vendor))
                 return string.Empty;
 
-            const string tableName = "npc_vendor";
+            var templatesDb = SQLDatabase.Get(Storage.NpcVendors);
+
+            /*const string tableName = "npc_vendor";
 
             var rows = new List<SQLInsertRow>();
             foreach (var npcVendor in Storage.NpcVendors)
@@ -200,9 +202,10 @@ namespace WowPacketParser.SQL.Builders
                     row.Comment = StoreGetters.GetName(vendorItem.Type <= 1 ? StoreNameType.Item : StoreNameType.Currency, (int)vendorItem.ItemId, false);
                     rows.Add(row);
                 }
-            }
+            }*/
 
-            return new SQLInsert(tableName, rows).Build();
+           //return new SQLInsert(tableName, rows).Build();
+            return string.Empty;
         }
 
         [BuilderMethod(Units = true)]

@@ -11,7 +11,7 @@ namespace WowPacketParser.SQL
     /// Can be used with basic types and enums or
     ///  arrays ("dmg_min1, dmg_min2, dmg_min3" -> name = dmg_min, count = 3, startAtZero = false)
     /// </summary>
-    [AttributeUsage((AttributeTargets.Field | AttributeTargets.Property), AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
     sealed public class DBFieldNameAttribute : Attribute
     {
         /// <summary>

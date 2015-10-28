@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using MySql.Data.MySqlClient;
@@ -362,14 +363,22 @@ namespace WowPacketParser.SQL
             return values;
         }
 
-        public static List<T> Get<T>(ConditionsList<T> conditionList = null, string database = null)
+        public static StoreBag<T> Get<T>(StoreBag<T> conditionList, string database = null)
+            where T : IDataModel
+        {
+            var cond = new ConditionsList<T>();
+            cond.AddRange(conditionList.Select(c => c.Item1));
+            return Get(cond);
+        } 
+
+        public static StoreBag<T> Get<T>(ConditionsList<T> conditionList = null, string database = null)
             where T : IDataModel
         {
             // TODO: Add new config option "Verify data against DB"
             if (!SQLConnector.Enabled)
                 return null;
 
-            List<T> result = new List<T>(conditionList?.Count ?? 0);
+            StoreBag<T> result = new StoreBag<T>();
 
             using (var reader = SQLConnector.ExecuteQuery(new SQLSelect<T>(conditionList, database).Build()))
             {
@@ -414,7 +423,7 @@ namespace WowPacketParser.SQL
                         i += field.Item2.Count;
                     }
 
-                    result.Add(instance);
+                    result.Add(instance, null);
                 }
             }
 

@@ -75,7 +75,7 @@ namespace WowPacketParser.Store
 
         // Vendor & trainer
         public static readonly StoreDictionary<uint, NpcTrainer> NpcTrainers = new StoreDictionary<uint, NpcTrainer>(new List<SQLOutput> { SQLOutput.npc_trainer });
-        public static readonly StoreDictionary<uint, NpcVendor> NpcVendors = new StoreDictionary<uint, NpcVendor>(new List<SQLOutput> { SQLOutput.npc_vendor });
+        public static readonly StoreBag<NpcVendor> NpcVendors = new StoreBag<NpcVendor>(new List<SQLOutput> { SQLOutput.npc_vendor });
 
         // Page & npc text
         public static readonly StoreDictionary<uint, PageText> PageTexts = new StoreDictionary<uint, PageText>(new List<SQLOutput> { SQLOutput.page_text });

@@ -226,6 +226,18 @@ namespace WowPacketParser.Misc
             return list;
         }
 
+        public static List<T> GetAttributes<T>(FieldInfo field) where T : Attribute 
+        {
+            var list = new List<T>();
+
+            var attrs = field.GetCustomAttributes(typeof(T), false);
+            if (attrs.Length <= 0)
+                return new List<T>();
+
+            list.AddRange(attrs.Select(attr => (T)attr));
+            return list;
+        }
+
         /// <summary>
         /// Returns current date time to be used in our file names (sqls, parsing logs, ...)
         /// </summary>

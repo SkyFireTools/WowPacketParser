@@ -49,9 +49,15 @@ namespace WowPacketParser.SQL
                         SQLUtil.GetFields<T>()
                             .Where(f => f.Item2.IsPrimaryKey)
                             .All(f => (f.Item1.GetValue(c).Equals(f.Item1.GetValue(condition))))))
-                throw new InvalidConstraintException("Tried to add duplicate primary key to condition list.");
+                return;
 
             _conditions.Add(condition);
+        }
+
+        public void AddRange(IEnumerable<T> range)
+        {
+            foreach (T c in range)
+                Add(c);
         }
 
         public void Clear()

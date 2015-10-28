@@ -42,9 +42,12 @@ namespace WowPacketParser.Tests.SQL
                 new TestData {ID = 2, TestInt1 = 3}
             };
 
-            Console.WriteLine(new SQLSelect<TestData>(cond).Build());
             Assert.AreEqual(
                 "SELECT `ID`, `TestInt1`, `TestInt2`, `TestString1` FROM world.test_data WHERE (`ID` = 1 AND `TestInt1` = 2 AND `TestString1` = 'string1') OR (`ID` = 2 AND `TestInt1` = 3)",
+                new SQLSelect<TestData>(cond, onlyPrimaryKeys: false).Build());
+
+            Assert.AreEqual(
+                "SELECT `ID`, `TestInt1`, `TestInt2`, `TestString1` FROM world.test_data WHERE (`ID` = 1) OR (`ID` = 2)",
                 new SQLSelect<TestData>(cond).Build());
         }
     }

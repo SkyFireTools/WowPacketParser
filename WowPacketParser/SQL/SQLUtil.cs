@@ -148,11 +148,138 @@ namespace WowPacketParser.SQL
             return string.Concat(name.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString().ToLower() : x.ToString().ToLower()));
         }
 
-        public static List<Tuple<FieldInfo, DBFieldNameAttribute>> GetFields<T>() where T : IDataModel
+
+        // TODO: Add where T : IDataModel back after StoreBag is fixed
+        public static List<Tuple<FieldInfo, DBFieldNameAttribute>> GetFields<T>()
         {
             var fields = Utilities.GetFieldsAndAttribute<T, DBFieldNameAttribute>();
             fields.RemoveAll(field => field.Item2.Name == null);
             return fields;
+        }
+
+        /// <summary>
+        /// <para>Compare two dictionaries (of the same types) and creates SQL inserts
+        ///  or updates accordingly.</para>
+        /// <remarks>Second dictionary can be null (only inserts queries will be produced)</remarks>
+        /// <remarks>Use DBTableName and DBFieldName attributes to specify table and field names, in TK</remarks>
+        /// </summary>
+        /// <typeparam name="T">Type of the primary key (uint)</typeparam>
+        /// <typeparam name="TK">Type of the WDB struct (field types must match DB field)</typeparam>
+        /// <param name="dict1">Dictionary retrieved from  parser</param>
+        /// <param name="dict2">Dictionary retrieved from  DB</param>
+        /// <param name="storeType">Are we dealing with Spells, Quests, Units, ...?</param>
+        /// <param name="primaryKeyName">The name of the primary key, usually "entry"</param>
+        /// <returns>A string containing full SQL queries</returns>
+        public static string Compare<T>(StoreBag<T> bag1, StoreBag<T> bag2, StoreNameType storeType)
+        {
+            var tableAttrs = (DBTableNameAttribute[])typeof(T).GetCustomAttributes(typeof(DBTableNameAttribute), false);
+            if (tableAttrs.Length <= 0)
+                return string.Empty;
+            var tableName = tableAttrs[0].Name;
+
+            var fields = Utilities.GetFieldsAndAttribute<T, DBFieldNameAttribute>();
+            if (fields == null)
+                return string.Empty;
+
+            fields.RemoveAll(field => field.Item2.Name == null);
+
+            var rowsIns = new List<SQLInsertRow>();
+            var rowsUpd = new List<SQLUpdateRow>();
+
+            foreach (var elem1 in bag1.ToList())
+            {
+                if (bag2 != null && bag2.ContainsKey(elem1.Item1)) // update
+                {
+                    var row = new SQLUpdateRow();
+
+                    foreach (var field in fields)
+                    {
+                        var elem2 = bag2[elem1.Item1];
+
+                        var val1 = field.Item1.GetValue(elem1.Item1);
+                        var val2 = field.Item1.GetValue(elem2.Item1);
+
+                        var arr1 = val1 as Array;
+                        if (arr1 != null)
+                        {
+                            var arr2 = (Array)val2;
+
+                            var isString = arr1.GetType().GetElementType() == typeof(string);
+
+                            for (var i = 0; i < field.Item2.Count; i++)
+                            {
+                                var value1 = i >= arr1.Length ? (isString ? (object)string.Empty : 0) : arr1.GetValue(i);
+                                var value2 = i >= arr2.Length ? (isString ? (object)string.Empty : 0) : arr2.GetValue(i);
+
+                                if (!Utilities.EqualValues(value1, value2))
+                                    row.AddValue(field.Item2.Name + (field.Item2.StartAtZero ? i : i + 1), value1);
+                            }
+
+                            continue;
+                        }
+
+                        if ((val2 is Array) && val1 == null)
+                            continue;
+
+                        if (!Utilities.EqualValues(val1, val2))
+                            row.AddValue(field.Item2.Name, val1);
+                    }
+
+                    var key = Convert.ToUInt32(elem1.Key);
+
+                    row.AddWhere(primaryKeyName, key);
+                    row.Comment = StoreGetters.GetName(storeType, (int)key, false);
+                    row.Table = tableName;
+
+                    if (row.ValueCount == 0)
+                        continue;
+
+                    var lastField = fields[fields.Count - 1];
+                    if (lastField.Item2.Name == "VerifiedBuild")
+                    {
+                        var buildvSniff = (int)lastField.Item1.GetValue(elem1.Value.Item1);
+                        var buildvDB = (int)lastField.Item1.GetValue(dict2[elem1.Key].Item1);
+
+                        if (buildvDB > buildvSniff) // skip update if DB already has a VerifiedBuild higher than this one
+                            continue;
+                    }
+
+                    rowsUpd.Add(row);
+                }
+                else // insert new
+                {
+                    var row = new SQLInsertRow();
+                    row.AddValue(primaryKeyName, elem1.Key);
+                    row.Comment = StoreGetters.GetName(storeType, Convert.ToInt32(elem1.Key), false);
+
+                    foreach (var field in fields)
+                    {
+                        if (field.Item1.FieldType.BaseType == typeof(Array))
+                        {
+                            var arr = (Array)field.Item1.GetValue(elem1.Value.Item1);
+                            if (arr == null)
+                                continue;
+
+                            for (var i = 0; i < arr.Length; i++)
+                                row.AddValue(field.Item2.Name + (field.Item2.StartAtZero ? i : i + 1), arr.GetValue(i));
+
+                            continue;
+                        }
+
+                        var val = field.Item1.GetValue(elem1.Value.Item1);
+                        if (val == null && field.Item1.FieldType == typeof(string))
+                            val = string.Empty;
+
+                        row.AddValue(field.Item2.Name, val);
+                    }
+                    rowsIns.Add(row);
+                }
+            }
+
+            var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false).Build() +
+                         new SQLUpdate(rowsUpd).Build();
+
+            return result;
         }
 
         /// <summary>

@@ -30,10 +30,13 @@ namespace WowPacketParser.SQL
 
         private readonly string _database;
 
-        public SQLSelect(ConditionsList<T> conditionList = null, string database = null)
+        private readonly bool _onlyPrimaryKeys;
+
+        public SQLSelect(ConditionsList<T> conditionList = null, string database = null, bool onlyPrimaryKeys = true)
         {
             _conditions = conditionList;
             _database = database;
+            _onlyPrimaryKeys = onlyPrimaryKeys;
         }
 
         public string Build()
@@ -60,7 +63,7 @@ namespace WowPacketParser.SQL
                 {
                     object value = f.GetValue(c);
 
-                    if (value == null)
+                    if (value == null || (_onlyPrimaryKeys && Utilities.GetAttributes<DBFieldNameAttribute>(f).Any(a => !a.IsPrimaryKey)))
                         continue;
 
                     if (f.GetCustomAttributes(typeof(DBFieldNameAttribute), false).Length != 0)
