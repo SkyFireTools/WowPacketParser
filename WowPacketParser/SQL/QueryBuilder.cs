@@ -20,42 +20,26 @@ namespace WowPacketParser.SQL
         }
     }
 
-    /// <summary>
-    /// Represents a SQL SELECT statement of the specified data model.
-    /// </summary>
-    /// <typeparam name="T">The data model</typeparam>
-    public class SQLSelect<T> : ISQLQuery where T : IDataModel
+    public class SQLWhere<T> where T : IDataModel
     {
         private readonly ConditionsList<T> _conditions;
 
-        private readonly string _database;
-
         private readonly bool _onlyPrimaryKeys;
 
-        public SQLSelect(ConditionsList<T> conditionList = null, string database = null, bool onlyPrimaryKeys = true)
+        public SQLWhere(ConditionsList<T> conditionsList, bool onlyPrimaryKeys = false)
         {
-            _conditions = conditionList;
-            _database = database;
+            _conditions = conditionsList;
             _onlyPrimaryKeys = onlyPrimaryKeys;
         }
 
+        public bool HasConditions => _conditions != null && _conditions.Count != 0;
+
         public string Build()
         {
-            string tableName = SQLUtil.GetTableName<T>();
-            var fields = SQLUtil.GetFields<T>();
-
-            StringBuilder fieldNames = new StringBuilder();
-            StringBuilder whereClause = new StringBuilder();
-            foreach (var field in fields)
-            {
-                fieldNames.Append(field.Item2);
-                fieldNames.Append(SQLUtil.CommaSeparator);
-            }
-            fieldNames.Remove(fieldNames.Length - 2, 2); // remove last ", "
-
             if (_conditions == null || _conditions.Count == 0)
-                return $"SELECT {fieldNames} FROM {_database ?? Settings.TDBDatabase}.{tableName}";
+                return string.Empty;
 
+            StringBuilder whereClause = new StringBuilder();
             foreach (T c in _conditions)
             {
                 whereClause.Append("(");
@@ -71,7 +55,7 @@ namespace WowPacketParser.SQL
                             ((DBFieldNameAttribute)
                                 f.GetCustomAttributes(typeof(DBFieldNameAttribute), false)[0]));
                     else
-                        whereClause.Append(f);
+                        whereClause.Append(SQLUtil.AddBackQuotes(f.Name));
 
                     whereClause.Append(" = ");
                     whereClause.Append(SQLUtil.ToSQLValue(value));
@@ -84,7 +68,46 @@ namespace WowPacketParser.SQL
             }
             whereClause.Remove(whereClause.Length - 4, 4); // remove last " OR ";
 
-            return $"SELECT {fieldNames} FROM {_database ?? Settings.TDBDatabase}.{tableName} WHERE {whereClause}";
+            return whereClause.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Represents a SQL SELECT statement of the specified data model.
+    /// </summary>
+    /// <typeparam name="T">The data model</typeparam>
+    public class SQLSelect<T> : ISQLQuery where T : IDataModel
+    {
+        private readonly SQLWhere<T> _whereClause;
+
+        private readonly string _database;
+
+        public SQLSelect(ConditionsList<T> conditionList = null, string database = null, bool onlyPrimaryKeys = true)
+        {
+            _whereClause = new SQLWhere<T>(conditionList, onlyPrimaryKeys);
+            _database = database;
+        }
+
+        public string Build()
+        {
+            string tableName = SQLUtil.GetTableName<T>();
+            var fields = SQLUtil.GetFields<T>();
+
+            StringBuilder fieldNames = new StringBuilder();
+            
+            foreach (var field in fields)
+            {
+                fieldNames.Append(field.Item2);
+                fieldNames.Append(SQLUtil.CommaSeparator);
+            }
+            fieldNames.Remove(fieldNames.Length - 2, 2); // remove last ", "
+
+            if (_whereClause.HasConditions)
+                return $"SELECT {fieldNames} FROM {_database ?? Settings.TDBDatabase}.{tableName} WHERE {_whereClause.Build()}";
+
+            return $"SELECT {fieldNames} FROM {_database ?? Settings.TDBDatabase}.{tableName}";
+
+            
         }
     }
 

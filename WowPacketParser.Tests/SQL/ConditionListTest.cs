@@ -55,7 +55,7 @@ namespace WowPacketParser.Tests.SQL
             _condList.Add(new TestDataModel {ID = 4, TestInt1 = 6});
             Assert.AreEqual(4, _condList.Count);
 
-            Assert.Throws<InvalidConstraintException>(() => _condList.Add(new TestDataModel {ID = 3, TestInt1 = 5}));
+            _condList.Add(new TestDataModel {ID = 3, TestInt1 = 5});
             Assert.AreEqual(4, _condList.Count);
         }
 
