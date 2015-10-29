@@ -43,6 +43,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string QuestObjective()
         {
+            /*
             var result = "";
             if (Storage.QuestObjectives.IsEmpty())
                 return String.Empty;
@@ -119,7 +120,8 @@ namespace WowPacketParser.SQL.Builders
 
             result += new SQLInsert("quest_visual_effect", rowsIns, 2).Build() + new SQLUpdate(rowsUpd).Build();
 
-            return result;
+            return result;*/
+            return string.Empty;
         }
 
         [BuilderMethod]
@@ -151,7 +153,7 @@ namespace WowPacketParser.SQL.Builders
             const string tableName = "creature_template";
 
             if (SQLConnector.Enabled)
-            {
+            {/*
                 var rowsUpd = new List<SQLUpdateRow>();
 
                 foreach (var npcName in Storage.UnitTemplates)
@@ -184,7 +186,7 @@ namespace WowPacketParser.SQL.Builders
                     }
                 }
 
-                result += new SQLUpdate(rowsUpd).Build();
+                result += new SQLUpdate(rowsUpd).Build();*/
             }
 
             return result;

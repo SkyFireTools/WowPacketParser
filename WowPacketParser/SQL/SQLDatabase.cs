@@ -346,10 +346,10 @@ namespace WowPacketParser.SQL
         }
 
         [Obsolete("Only for legacy code.")]
-        private static List<Tuple<FieldInfo, DBFieldNameAttribute>> GetFields<T>()
+        private static Dictionary<FieldInfo, List<DBFieldNameAttribute>> GetFields<T>()
         {
-            var fields = Utilities.GetFieldsAndAttribute<T, DBFieldNameAttribute>();
-            fields.RemoveAll(field => field.Item2.Name == null);
+            var fields = Utilities.GetFieldsAndAttributes<T, DBFieldNameAttribute>();
+            //fields.RemoveAll(field => field.Item3.Name == null);
             return fields;
         }
 
@@ -395,13 +395,13 @@ namespace WowPacketParser.SQL
                     int i = 0;
                     foreach (var field in fields)
                     {
-                        if (values[i] is DBNull && field.Item1.FieldType == typeof(string))
-                            field.Item1.SetValue(instance, string.Empty);
-                        else if (field.Item1.FieldType.BaseType == typeof(Enum))
-                            field.Item1.SetValue(instance, Enum.Parse(field.Item1.FieldType, values[i].ToString()));
-                        else if (field.Item1.FieldType.BaseType == typeof(Array))
+                        if (values[i] is DBNull && field.Item2.FieldType == typeof(string))
+                            field.Item2.SetValue(instance, string.Empty);
+                        else if (field.Item2.FieldType.BaseType == typeof(Enum))
+                            field.Item2.SetValue(instance, Enum.Parse(field.Item2.FieldType, values[i].ToString()));
+                        else if (field.Item2.FieldType.BaseType == typeof(Array))
                         {
-                            var arr = Array.CreateInstance(field.Item1.FieldType.GetElementType(), field.Item2.Count);
+                            var arr = Array.CreateInstance(field.Item2.FieldType.GetElementType(), field.Item3.Count);
 
                             for (var j = 0; j < arr.Length; j++)
                             {
@@ -413,14 +413,14 @@ namespace WowPacketParser.SQL
 
                                 arr.SetValue(val, j);
                             }
-                            field.Item1.SetValue(instance, arr);
+                            field.Item2.SetValue(instance, arr);
                         }
-                        else if (field.Item1.FieldType == typeof(bool))
-                            field.Item1.SetValue(instance, Convert.ToBoolean(values[i]));
+                        else if (field.Item2.FieldType == typeof(bool))
+                            field.Item2.SetValue(instance, Convert.ToBoolean(values[i]));
                         else
-                            field.Item1.SetValue(instance, values[i]);
+                            field.Item2.SetValue(instance, values[i]);
 
-                        i += field.Item2.Count;
+                        i += field.Item3.Count;
                     }
 
                     result.Add(instance, null);
@@ -444,7 +444,7 @@ namespace WowPacketParser.SQL
         public static StoreDictionary<T, TK> GetDict<T, TK>(List<T> entries, string primaryKeyName = "entry",
             string database = null)
         {
-            if (entries.Count == 0)
+            /*if (entries.Count == 0)
                 return null;
 
             // TODO: Add new config option "Verify data against DB"
@@ -518,7 +518,8 @@ namespace WowPacketParser.SQL
                 }
             }
 
-            return new StoreDictionary<T, TK>(dict);
+            return new StoreDictionary<T, TK>(dict);*/
+            return null;
         }
 
         /// <summary>
@@ -539,7 +540,7 @@ namespace WowPacketParser.SQL
             where T : struct
             where TG : struct
         {
-            if (entries.Count == 0)
+            /*if (entries.Count == 0)
                 return null;
 
             // TODO: Add new config option "Verify data against DB"
@@ -644,7 +645,8 @@ namespace WowPacketParser.SQL
                 }
             }
 
-            return new StoreDictionary<Tuple<T, TG>, TK>(dict);
+            return new StoreDictionary<Tuple<T, TG>, TK>(dict);*/
+            return null;
         }
 
         /// <summary>
@@ -668,7 +670,7 @@ namespace WowPacketParser.SQL
             where TG : struct
             where TH : struct
         {
-            if (entries.Count == 0)
+            /*if (entries.Count == 0)
                 return null;
 
             // TODO: Add new config option "Verify data against DB"
@@ -783,13 +785,14 @@ namespace WowPacketParser.SQL
                 }
             }
 
-            return new StoreDictionary<Tuple<T, TG, TH>, TK>(dict);
+            return new StoreDictionary<Tuple<T, TG, TH>, TK>(dict);*/
+            return null;
         }
 
         public static StoreMulti<Tuple<T, TG>, TK> GetDictMulti<T, TG, TK>(List<Tuple<T, TG>> entries,
             string primaryKeyName1, string primaryKeyName2)
         {
-            if (entries.Count == 0)
+            /*if (entries.Count == 0)
                 return null;
 
             // TODO: Add new config option "Verify data against DB"
@@ -880,7 +883,8 @@ namespace WowPacketParser.SQL
                 }
             }
 
-            return new StoreMulti<Tuple<T, TG>, TK>(dict);
+            return new StoreMulti<Tuple<T, TG>, TK>(dict);*/
+            return null;
         }
     }
 }

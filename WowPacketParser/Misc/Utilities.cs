@@ -203,27 +203,31 @@ namespace WowPacketParser.Misc
         /// Get a list of fields and attributes from a type. Only fields with the
         /// specified attribute are returned.
         /// </summary>
+        /// <param name="remove">Remove fields without the specified attribute.</param>
         /// <typeparam name="T">Type (class/struct)</typeparam>
         /// <typeparam name="TK">Attribute</typeparam>
         /// <returns>A list of tuples where Item1 is FieldInfo and Item2 the corresponding attribute</returns>
-        public static List<Tuple<FieldInfo, TK>> GetFieldsAndAttribute<T, TK>() where TK : Attribute
+        public static Dictionary<FieldInfo, List<TK>> GetFieldsAndAttributes<T, TK>(bool remove = true) where TK : Attribute
         {
             var fi = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance);
             if (fi.Length <= 0)
                 return null;
 
-            var list = new List<Tuple<FieldInfo, TK>>(fi.Length);
+            var dict = new Dictionary<FieldInfo, List<TK>>(fi.Length);
 
-            foreach (var field in fi)
+            foreach (FieldInfo field in fi)
             {
                 var attrs = field.GetCustomAttributes(typeof(TK), false);
-                if (attrs.Length <= 0)
+                if (remove && attrs.Length <= 0)
                     continue;
 
-                list.AddRange(attrs.Select(attr => Tuple.Create(field, (TK) attr)));
+                if (attrs.Length <= 0)
+                    dict.Add(field, null);
+
+                dict.Add(field, ((TK[]) attrs).ToList());
             }
 
-            return list;
+            return dict;
         }
 
         public static List<T> GetAttributes<T>(FieldInfo field) where T : Attribute 

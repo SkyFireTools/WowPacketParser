@@ -418,6 +418,7 @@ namespace WowPacketParser.SQL.Builders
             }
 
             // `gossip_menu_option`
+            /*
             if (Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.gossip_menu_option))
             {
                 if (SQLConnector.Enabled)
@@ -498,6 +499,7 @@ namespace WowPacketParser.SQL.Builders
                     }
                     result += new SQLInsert("gossip_menu_option", rowsIns, 2).Build() +
                               new SQLUpdate(rowsUpd).Build();
+                              
                 }
                 else
                 {
@@ -528,7 +530,7 @@ namespace WowPacketParser.SQL.Builders
                     result += new SQLInsert("gossip_menu_option", rows, 2).Build();
                 }
             }
-
+            */
             return result;
         }
 
@@ -559,7 +561,7 @@ namespace WowPacketParser.SQL.Builders
                     }
                 }
 
-                var rowsUpd = new List<SQLUpdateRow>();
+                /*var rowsUpd = new List<SQLUpdateRow>();
 
                 foreach (var u in gossipPOIsTable)
                 {
@@ -575,7 +577,7 @@ namespace WowPacketParser.SQL.Builders
                     rowsUpd.Add(row);
                 }
 
-                result += new SQLUpdate(rowsUpd).Build();
+                result += new SQLUpdate(rowsUpd).Build();*/
             }
 
             if (Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.points_of_interest))

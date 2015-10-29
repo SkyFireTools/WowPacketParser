@@ -148,7 +148,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string CreatureDifficulty()
         {
-            if (Storage.CreatureDifficultys.IsEmpty())
+            /*if (Storage.CreatureDifficultys.IsEmpty())
                 return String.Empty;
 
             if (!Settings.HotfixSQLOutputFlag.HasAnyFlagBit(HotfixSQLOutput.creature_difficulty))
@@ -244,6 +244,8 @@ namespace WowPacketParser.SQL.Builders
 
             return new SQLInsert("creature_difficulty", rowsIns).Build() +
                 new SQLUpdate(rowsUpd).Build();
+                */
+            return string.Empty;
         }
 
         [BuilderMethod]

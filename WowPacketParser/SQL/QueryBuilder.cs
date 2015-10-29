@@ -40,33 +40,63 @@ namespace WowPacketParser.SQL
                 return string.Empty;
 
             StringBuilder whereClause = new StringBuilder();
-            foreach (T c in _conditions)
+
+            if (_conditions.GetPrimaryKeyCount() == 1)
             {
-                whereClause.Append("(");
-                foreach (var f in c.GetType().GetFields())
+                var field = SQLUtil.GetFields<T>().Single(f => f.Item2 == _conditions.GetFirstPrimaryKey());
+
+                whereClause.Append(field.Item1);
+                if (_conditions.Count == 1)
                 {
-                    object value = f.GetValue(c);
-
-                    if (value == null || (_onlyPrimaryKeys && Utilities.GetAttributes<DBFieldNameAttribute>(f).Any(a => !a.IsPrimaryKey)))
-                        continue;
-
-                    if (f.GetCustomAttributes(typeof(DBFieldNameAttribute), false).Length != 0)
-                        whereClause.Append(
-                            ((DBFieldNameAttribute)
-                                f.GetCustomAttributes(typeof(DBFieldNameAttribute), false)[0]));
-                    else
-                        whereClause.Append(SQLUtil.AddBackQuotes(f.Name));
-
                     whereClause.Append(" = ");
-                    whereClause.Append(SQLUtil.ToSQLValue(value));
-                    whereClause.Append(" AND ");
+                    whereClause.Append(field.Item2.GetValue(_conditions.First()));
                 }
+                else
+                {
+                    whereClause.Append(" IN (");
 
-                whereClause.Remove(whereClause.Length - 5, 5); // remove last " AND "
-                whereClause.Append(")");
-                whereClause.Append(" OR ");
+                    foreach (Condition<T> c in _conditions)
+                    {
+                        object value = field.Item2.GetValue(c.Data);
+                        whereClause.Append(SQLUtil.ToSQLValue(value));
+
+                        if (!string.IsNullOrEmpty(c.Comment))
+                            whereClause.Append(" /*" + c.Comment + "*/");
+
+                        whereClause.Append(SQLUtil.CommaSeparator);
+                    }
+                    whereClause.Remove(whereClause.Length - SQLUtil.CommaSeparator.Length, SQLUtil.CommaSeparator.Length); // remove last ", "
+
+                    whereClause.Append(")");
+                }
             }
-            whereClause.Remove(whereClause.Length - 4, 4); // remove last " OR ";
+            else
+            {
+                foreach (Condition<T> c in _conditions)
+                {
+                    whereClause.Append("(");
+                    foreach (var field in SQLUtil.GetFields<T>())
+                    {
+                        object value = field.Item2.GetValue(c.Data);
+
+                        if (value == null ||
+                            (_onlyPrimaryKeys &&
+                             field.Item3.Any(a => !a.IsPrimaryKey)))
+                            continue;
+
+                        whereClause.Append(SQLUtil.AddBackQuotes(field.Item1));
+
+                        whereClause.Append(" = ");
+                        whereClause.Append(SQLUtil.ToSQLValue(value));
+                        whereClause.Append(" AND ");
+                    }
+
+                    whereClause.Remove(whereClause.Length - 5, 5); // remove last " AND "
+                    whereClause.Append(")");
+                    whereClause.Append(" OR ");
+                }
+                whereClause.Remove(whereClause.Length - 4, 4); // remove last " OR ";
+            }
 
             return whereClause.ToString();
         }
@@ -106,55 +136,20 @@ namespace WowPacketParser.SQL
                 return $"SELECT {fieldNames} FROM {_database ?? Settings.TDBDatabase}.{tableName} WHERE {_whereClause.Build()}";
 
             return $"SELECT {fieldNames} FROM {_database ?? Settings.TDBDatabase}.{tableName}";
-
-            
         }
     }
 
-    public class SQLUpdate : ISQLQuery
+    public class SQLUpdate<T> : ISQLQuery where T : IDataModel
     {
-        private List<SQLUpdateRow> Rows { get; set; }
+        private List<SQLUpdateRow<T>> Rows { get; set; }
 
         /// <summary>
         /// Creates multiple update rows
         /// </summary>
         /// <param name="rows">A list of <see cref="SQLUpdateRow"/> rows</param>
-        public SQLUpdate(List<SQLUpdateRow> rows)
+        public SQLUpdate(List<SQLUpdateRow<T>> rows)
         {
-            Rows = new List<SQLUpdateRow>();
-            if (rows.Count == 0)
-                return;
-
-            Rows.AddRange(rows.Where(row => row.WhereClause.Count != 1));
-
-            var vals = rows
-                .Where(row => row.WhereClause.Count == 1)
-                .GroupBy(row => row.Values, row => row, new DictionaryComparer());
-
-            foreach (IGrouping<Dictionary<string, object>, SQLUpdateRow> grouping in vals)
-            {
-                if (!grouping.Any())
-                    continue;
-
-                if (grouping.First().WhereClause.Count == 0)
-                    continue;
-
-                var updateRow = new SQLUpdateRowMultiple1(grouping.First().WhereClause[0].Key)
-                {
-                    Table = SQLUtil.RemoveBackQuotes(grouping.First().Table)
-                };
-
-                foreach (var value in grouping.First().Values)
-                    updateRow.AddValue(SQLUtil.RemoveBackQuotes(value.Key), value.Value);
-
-                foreach (var row in grouping)
-                {
-                    foreach (var value in row.WhereClause)
-                        updateRow.AddWhere(value.Value, row.Comment);
-                }
-
-                Rows.Add(updateRow);
-            }
+            Rows = rows;
         }
 
         /// <summary>
@@ -175,87 +170,7 @@ namespace WowPacketParser.SQL
             return result.ToString();
         }
     }
-
-    /// <summary>
-    /// A single SQL UPDATE row with multiple entries, e.g UPDATE `a` SET `b`=X, `c`=Y WHERE `id` IN (1, 2, 3);
-    /// </summary>
-    public class SQLUpdateRowMultiple1 : SQLUpdateRow
-    {
-        private readonly string _primaryKey;
-
-        public SQLUpdateRowMultiple1(string primaryKey)
-        {
-            _primaryKey = primaryKey;
-        }
-
-        public void AddWhere(object value, string comment = "")
-        {
-            WhereClause.Add(new KeyValuePair<string, object>(comment, value));
-        }
-
-        public override string Build()
-        {
-            var row = new StringBuilder();
-            if (CommentOut)
-                row.Append("-- ");
-
-            // Return empty if there are no values or where clause or no table name set
-            if (Values.Count == 0 || WhereClause.Count == 0 || string.IsNullOrEmpty(Table))
-                return string.Empty;
-
-            row.Append("UPDATE ");
-            row.Append(Table);
-            row.Append(" SET ");
-
-            var count = 0;
-            foreach (var values in Values)
-            {
-                count++;
-                row.Append(values.Key);
-                row.Append("=");
-                row.Append(values.Value);
-                if (Values.Count != count)
-                    row.Append(SQLUtil.CommaSeparator);
-            }
-
-            row.Append(" WHERE ");
-            row.Append(_primaryKey);
-
-            if (WhereClause.Count > 1)
-            {
-                row.Append(" IN (");
-
-                count = 0;
-                foreach (var whereClause in WhereClause)
-                {
-                    count++;
-                    row.Append(whereClause.Value);
-                    if (!string.IsNullOrEmpty(whereClause.Key))
-                        row.Append(" /*" + whereClause.Key + "*/");
-                    if (WhereClause.Count != count)
-                        row.Append(", ");
-                }
-
-                row.Append(")");
-            }
-            else if (WhereClause.Count == 1)
-            {
-                row.Append("=");
-                row.Append(WhereClause[0].Value);
-                Comment = WhereClause[0].Key;
-            }
-
-            row.Append(";");
-
-            if (!String.IsNullOrWhiteSpace(Comment))
-                row.Append(" -- " + Comment);
-            row.Append(Environment.NewLine);
-
-            return row.ToString();
-        }
-    }
-
-    public class SQLUpdateRow : ISQLQuery
+    public class SQLUpdateRow<T> : ISQLQuery where T : IDataModel
     {
         /// <summary>
         /// <para>Comment appended to the values</para>
@@ -272,15 +187,16 @@ namespace WowPacketParser.SQL
         public readonly Dictionary<string, object> Values =
             new Dictionary<string, object>();
 
-        public readonly List<KeyValuePair<string, object>> WhereClause =
-            new List<KeyValuePair<string, object>>();
+        protected readonly SQLWhere<T> WhereClause; 
 
         /// <summary>
         /// Returns the amount of values
         /// </summary>
-        public int ValueCount
+        public int ValueCount => Values.Count;
+
+        public SQLUpdateRow(ConditionsList<T> conditions)
         {
-            get { return Values.Count; }
+            WhereClause = new SQLWhere<T>(conditions, true);
         }
 
         /// <summary>
@@ -328,27 +244,6 @@ namespace WowPacketParser.SQL
         }
 
         /// <summary>
-        /// Adds to this row what will be updated
-        /// </summary>
-        /// <param name="field">The field name associated with the value</param>
-        /// <param name="value">The value used in the where clause</param>
-        public void AddWhere(string field, object value)
-        {
-            WhereClause.Add(new KeyValuePair<string, object>(SQLUtil.AddBackQuotes(field), value));
-        }
-
-        private string _table;
-
-        /// <summary>
-        /// The table that will be updated
-        /// </summary>
-        public string Table
-        {
-            get { return SQLUtil.AddBackQuotes(_table); }
-            set { _table = value; }
-        }
-
-        /// <summary>
         /// Constructs the actual query
         /// </summary>
         /// <returns>A single update query</returns>
@@ -359,11 +254,11 @@ namespace WowPacketParser.SQL
                 row.Append("-- ");
 
             // Return empty if there are no values or where clause or no table name set
-            if (Values.Count == 0 || WhereClause.Count == 0 || string.IsNullOrEmpty(Table))
+            if (Values.Count == 0 || WhereClause.HasConditions)
                 return string.Empty;
 
             row.Append("UPDATE ");
-            row.Append(Table);
+            row.Append(SQLUtil.GetTableName<T>());
             row.Append(" SET ");
 
             var count = 0;
@@ -378,21 +273,10 @@ namespace WowPacketParser.SQL
             }
 
             row.Append(" WHERE ");
-
-            count = 0;
-            foreach (var whereClause in WhereClause)
-            {
-                count++;
-                row.Append(whereClause.Key);
-                row.Append("=");
-                row.Append(whereClause.Value is string ? SQLUtil.Stringify(whereClause.Value) : whereClause.Value);
-                if (WhereClause.Count != count)
-                    row.Append(" AND ");
-            }
-
+            row.Append(WhereClause.Build());
             row.Append(";");
 
-            if (!String.IsNullOrWhiteSpace(Comment))
+            if (!string.IsNullOrWhiteSpace(Comment))
                 row.Append(" -- " + Comment);
             row.Append(Environment.NewLine);
 

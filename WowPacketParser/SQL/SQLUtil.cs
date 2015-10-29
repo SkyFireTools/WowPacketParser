@@ -150,10 +150,21 @@ namespace WowPacketParser.SQL
 
 
         // TODO: Add where T : IDataModel back after StoreBag is fixed
-        public static List<Tuple<FieldInfo, DBFieldNameAttribute>> GetFields<T>()
+        public static List<Tuple<string, FieldInfo, List<DBFieldNameAttribute>>> GetFields<T>()
         {
-            var fields = Utilities.GetFieldsAndAttribute<T, DBFieldNameAttribute>();
-            fields.RemoveAll(field => field.Item2.Name == null);
+            var fields = new List<Tuple<string, FieldInfo, List<DBFieldNameAttribute>>>();
+            //fields.RemoveAll(field => field.Item2.Name == null);
+            foreach (var field in Utilities.GetFieldsAndAttributes<T, DBFieldNameAttribute>(false))
+            {
+                string fieldName;
+                if (field.Value == null)
+                    fieldName = field.Key.Name;
+                else
+                    fieldName = field.Value.First().ToString();
+
+                fields.Add(new Tuple<string, FieldInfo, List<DBFieldNameAttribute>>(fieldName, field.Key, field.Value));
+            }
+
             return fields;
         }
 
@@ -172,12 +183,12 @@ namespace WowPacketParser.SQL
         /// <returns>A string containing full SQL queries</returns>
         public static string Compare<T>(StoreBag<T> bag1, StoreBag<T> bag2, StoreNameType storeType)
         {
-            var tableAttrs = (DBTableNameAttribute[])typeof(T).GetCustomAttributes(typeof(DBTableNameAttribute), false);
+            /*var tableAttrs = (DBTableNameAttribute[])typeof(T).GetCustomAttributes(typeof(DBTableNameAttribute), false);
             if (tableAttrs.Length <= 0)
                 return string.Empty;
             var tableName = tableAttrs[0].Name;
 
-            var fields = Utilities.GetFieldsAndAttribute<T, DBFieldNameAttribute>();
+            var fields = Utilities.GetFieldsAndAttributes<T, DBFieldNameAttribute>();
             if (fields == null)
                 return string.Empty;
 
@@ -279,7 +290,8 @@ namespace WowPacketParser.SQL
             var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false).Build() +
                          new SQLUpdate(rowsUpd).Build();
 
-            return result;
+            return result;*/
+            return string.Empty;
         }
 
         /// <summary>
@@ -297,7 +309,7 @@ namespace WowPacketParser.SQL
         /// <returns>A string containing full SQL queries</returns>
         public static string CompareDicts<T, TK>(StoreDictionary<T, TK> dict1, StoreDictionary<T, TK> dict2, StoreNameType storeType, string primaryKeyName = "entry")
         {
-            var tableAttrs = (DBTableNameAttribute[])typeof(TK).GetCustomAttributes(typeof(DBTableNameAttribute), false);
+            /*var tableAttrs = (DBTableNameAttribute[])typeof(TK).GetCustomAttributes(typeof(DBTableNameAttribute), false);
             if (tableAttrs.Length <= 0)
                 return string.Empty;
             var tableName = tableAttrs[0].Name;
@@ -404,7 +416,8 @@ namespace WowPacketParser.SQL
             var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false).Build() +
                          new SQLUpdate(rowsUpd).Build();
 
-            return result;
+            return result;*/
+            return string.Empty;
         }
 
         /// <summary>
@@ -425,7 +438,7 @@ namespace WowPacketParser.SQL
         /// <returns>A string containing full SQL queries</returns>
         public static string CompareDicts<T, TG, TK>(StoreDictionary<Tuple<T, TG>, TK> dict1, StoreDictionary<Tuple<T, TG>, TK> dict2, StoreNameType storeType1, StoreNameType storeType2, string primaryKeyName1, string primaryKeyName2)
         {
-            var tableAttrs = (DBTableNameAttribute[])typeof(TK).GetCustomAttributes(typeof(DBTableNameAttribute), false);
+            /*var tableAttrs = (DBTableNameAttribute[])typeof(TK).GetCustomAttributes(typeof(DBTableNameAttribute), false);
             if (tableAttrs.Length <= 0)
                 return string.Empty;
             var tableName = tableAttrs[0].Name;
@@ -551,7 +564,8 @@ namespace WowPacketParser.SQL
             var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 2).Build() +
                          new SQLUpdate(rowsUpd).Build();
 
-            return result;
+            return result;*/
+            return string.Empty;
         }
 
         /// <summary>
@@ -575,7 +589,7 @@ namespace WowPacketParser.SQL
         /// <returns>A string containing full SQL queries</returns>
         public static string CompareDicts<T, TG, TH, TK>(StoreDictionary<Tuple<T, TG, TH>, TK> dict1, StoreDictionary<Tuple<T, TG, TH>, TK> dict2, StoreNameType storeType1, StoreNameType storeType2, StoreNameType storeType3, string primaryKeyName1, string primaryKeyName2, string primaryKeyName3)
         {
-            var tableAttrs = (DBTableNameAttribute[])typeof(TK).GetCustomAttributes(typeof(DBTableNameAttribute), false);
+            /*var tableAttrs = (DBTableNameAttribute[])typeof(TK).GetCustomAttributes(typeof(DBTableNameAttribute), false);
             if (tableAttrs.Length <= 0)
                 return string.Empty;
             var tableName = tableAttrs[0].Name;
@@ -711,7 +725,8 @@ namespace WowPacketParser.SQL
             var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false, primaryKeyNumber: 3).Build() +
                          new SQLUpdate(rowsUpd).Build();
 
-            return result;
+            return result;*/
+            return string.Empty;
         }
     }
 }

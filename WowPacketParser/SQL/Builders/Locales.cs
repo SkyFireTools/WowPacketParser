@@ -13,7 +13,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string BroadcastTextLocale()
         {
-            if (Storage.BroadcastTextLocales.IsEmpty())
+            /*if (Storage.BroadcastTextLocales.IsEmpty())
                 return String.Empty;
 
             if (!Settings.HotfixSQLOutputFlag.HasAnyFlagBit(HotfixSQLOutput.broadcast_text_locale))
@@ -67,11 +67,14 @@ namespace WowPacketParser.SQL.Builders
                          new SQLUpdate(rowsUpd).Build();
 
             return "SET NAMES 'utf8';" + Environment.NewLine + result + Environment.NewLine + "SET NAMES 'latin1';";
+            */
+            return string.Empty;
         }
 
         [BuilderMethod]
         public static string LocalesQuest()
         {
+            /*
             if (Storage.LocalesQuests.IsEmpty())
                 return String.Empty;
 
@@ -154,11 +157,14 @@ namespace WowPacketParser.SQL.Builders
                          new SQLUpdate(rowsUpd).Build();
 
             return "SET NAMES 'utf8';" + Environment.NewLine + result + Environment.NewLine + "SET NAMES 'latin1';";
+            */
+            return string.Empty;
         }
 
         [BuilderMethod]
         public static string LocalesQuestObjectives()
         {
+            /*
             if (Storage.LocalesQuestObjectives.IsEmpty())
                 return String.Empty;
 
@@ -217,6 +223,8 @@ namespace WowPacketParser.SQL.Builders
                          new SQLUpdate(rowsUpd).Build();
 
             return "SET NAMES 'utf8';" + Environment.NewLine + result + Environment.NewLine + "SET NAMES 'latin1';";
+            */
+            return string.Empty;
         }
     }
 }

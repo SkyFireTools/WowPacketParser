@@ -289,8 +289,8 @@ namespace WowPacketParser.Store
             get
             {
                 return _bag.FirstOrDefault(c => SQLUtil.GetFields<T>()
-                        .Where(f => f.Item2.IsPrimaryKey)
-                        .All(f => (f.Item1.GetValue(c).Equals(f.Item1.GetValue(key)))));
+                        .Where(f => f.Item3.Any(g => g.IsPrimaryKey))
+                        .All(f => (f.Item2.GetValue(c).Equals(f.Item2.GetValue(key)))));
             }
         }
 
@@ -305,8 +305,8 @@ namespace WowPacketParser.Store
             return _bag.Any(
                 c =>
                     SQLUtil.GetFields<T>()
-                        .Where(f => f.Item2.IsPrimaryKey)
-                        .All(f => (f.Item1.GetValue(c).Equals(f.Item1.GetValue(key)))));
+                        .Where(f => f.Item3.Any(g => g.IsPrimaryKey))
+                        .All(f => (f.Item2.GetValue(c).Equals(f.Item2.GetValue(key)))));
         }
 
         public override void Clear()

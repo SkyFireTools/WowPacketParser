@@ -78,7 +78,7 @@ namespace WowPacketParser.Tests.SQL
         {
             Assert.IsNotNull(_condList.GetEnumerator());
 
-            foreach (TestDataModel c in _condList)
+            foreach (Condition<TestDataModel> c in _condList)
                 Assert.IsNotNull(c);
         }
     }
