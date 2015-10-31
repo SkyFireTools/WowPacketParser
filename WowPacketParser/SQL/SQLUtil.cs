@@ -158,7 +158,7 @@ namespace WowPacketParser.SQL
             {
                 string fieldName;
                 if (field.Value == null)
-                    fieldName = field.Key.Name;
+                    fieldName = AddBackQuotes(field.Key.Name);
                 else
                     fieldName = field.Value.First().ToString();
 

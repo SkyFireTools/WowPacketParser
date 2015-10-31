@@ -53,7 +53,7 @@
     <Compile Include="Misc\BiDictionaryTest.cs" />
     <Compile Include="Misc\BitTest.cs" />
     <Compile Include="Misc\ClientVersionTest.cs" />
-    <Compile Include="SQL\ConditionListTest.cs" />
+    <Compile Include="SQL\RowListTest.cs" />
     <Compile Include="Misc\ConfigurationTest.cs" />
     <Compile Include="SQL\QueryBuilderTest.cs" />
     <Compile Include="SQL\SQLDatabaseTest.cs" />

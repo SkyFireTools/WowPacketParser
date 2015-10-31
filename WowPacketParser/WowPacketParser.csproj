@@ -478,7 +478,7 @@
     <Compile Include="SQL\Builders\Spawns.cs" />
     <Compile Include="SQL\Builders\UnitMisc.cs" />
     <Compile Include="SQL\Builders\WDBTemplates.cs" />
-    <Compile Include="SQL\ConditionsList.cs" />
+    <Compile Include="SQL\RowList.cs" />
     <Compile Include="SQL\IDataModel.cs" />
     <Compile Include="SQL\DBFieldNameAttribute.cs" />
     <Compile Include="SQL\DBTableNameAttribute.cs" />

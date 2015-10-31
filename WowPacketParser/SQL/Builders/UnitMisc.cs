@@ -72,7 +72,8 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            return new SQLInsert(tableName, rows).Build();
+            //return new SQLInsert(tableName, rows).Build();
+            return string.Empty;
         }
 
         [BuilderMethod(Units = true)]
@@ -155,57 +156,55 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new SQLInsert(tableName, rows).Build();
+            //return new SQLInsert(tableName, rows).Build();
+            return string.Empty;
         }
 
         [BuilderMethod]
         public static string NpcVendor()
         {
             if (Storage.NpcVendors.IsEmpty())
-                return String.Empty;
+                return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_vendor))
                 return string.Empty;
 
             var templatesDb = SQLDatabase.Get(Storage.NpcVendors);
 
-            /*const string tableName = "npc_vendor";
-
             var rows = new List<SQLInsertRow>();
-            foreach (var npcVendor in Storage.NpcVendors)
+            foreach (var vendorGroup in Storage.NpcVendors.GroupBy(v =>v.Item1.Entry))
             {
                 var comment = new SQLInsertRow
                 {
-                    HeaderComment = StoreGetters.GetName(StoreNameType.Unit, (int) npcVendor.Key)
+                    //HeaderComment = StoreGetters.GetName(StoreNameType.Unit, (int)vendorGroup.Key)
                 };
                 rows.Add(comment);
-                foreach (var vendorItem in npcVendor.Value.Item1.VendorItems)
+                foreach (var vendor in vendorGroup.ToList())
                 {
                     var row = new SQLInsertRow();
-                    row.AddValue("entry", npcVendor.Key);
-                    row.AddValue("item", vendorItem.ItemId);
-                    row.AddValue("slot", vendorItem.Slot);
-                    row.AddValue("maxcount", vendorItem.MaxCount);
-                    row.AddValue("ExtendedCost", vendorItem.ExtendedCostId);
+                    //row.AddValue("entry", vendor.Item1.Entry);
+                    row.AddValue("item", vendor.Item1.Item);
+                    row.AddValue("slot", vendor.Item1.Slot);
+                    row.AddValue("maxcount", vendor.Item1.MaxCount);
+                    row.AddValue("ExtendedCost", vendor.Item1.ExtendedCost);
 
                     if (ClientVersion.AddedInVersion(ClientType.Cataclysm))
-                        row.AddValue("Type", vendorItem.Type);
+                        row.AddValue("Type", vendor.Item1.Type);
 
                     if (ClientVersion.AddedInVersion(ClientType.MistsOfPandaria))
                     {
-                        row.AddValue("PlayerConditionID", vendorItem.PlayerConditionID);
-                        row.AddValue("IgnoreFiltering", vendorItem.IgnoreFiltering);
+                        row.AddValue("PlayerConditionID", vendor.Item1.PlayerConditionID);
+                        row.AddValue("IgnoreFiltering", vendor.Item1.IgnoreFiltering);
                     }
 
-                    row.AddValue("VerifiedBuild", vendorItem.VerifiedBuild);
+                    row.AddValue("VerifiedBuild", vendor.Item1.VerifiedBuild);
 
-                    row.Comment = StoreGetters.GetName(vendorItem.Type <= 1 ? StoreNameType.Item : StoreNameType.Currency, (int)vendorItem.ItemId, false);
+                    row.Comment = StoreGetters.GetName(vendor.Item1.Type <= 1 ? StoreNameType.Item : StoreNameType.Currency, vendor.Item1.Item, false);
                     rows.Add(row);
                 }
-            }*/
+            }
 
-           //return new SQLInsert(tableName, rows).Build();
-            return string.Empty;
+            return new SQLInsert<NpcVendor>(rows).Build();
         }
 
         [BuilderMethod(Units = true)]
@@ -297,7 +296,8 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            return new SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();
+            //return new SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();
+            return string.Empty;
         }
 
         //public static string CreatureXP(Dictionary<Guid, Unit> units)
@@ -341,7 +341,8 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new SQLInsert(tableName, rows, 2).Build();
+            //return new SQLInsert(tableName, rows, 2).Build();
+            return string.Empty;
         }
 
         [BuilderMethod]
@@ -396,7 +397,7 @@ namespace WowPacketParser.SQL.Builders
                                 }
                             }
                     }
-                    result += new SQLInsert("gossip_menu", rows, 2).Build();
+                    //result += new SQLInsert("gossip_menu", rows, 2).Build();
                 }
                 else
                 {
@@ -413,7 +414,7 @@ namespace WowPacketParser.SQL.Builders
                         rows.Add(row);
                     }
 
-                    result += new SQLInsert("gossip_menu", rows, 2).Build();
+                    //result += new SQLInsert("gossip_menu", rows, 2).Build();
                 }
             }
 
@@ -603,8 +604,8 @@ namespace WowPacketParser.SQL.Builders
                     count++;
                 }
 
-                result += new SQLDelete(Tuple.Create("@ID+0", "@ID+" + (count - 1)), "entry", tableName).Build();
-                result += new SQLInsert(tableName, rowsIns, withDelete: false).Build();
+                //result += new SQLDelete(Tuple.Create("@ID+0", "@ID+" + (count - 1)), "entry", tableName).Build();
+                //result += new SQLInsert(tableName, rowsIns, withDelete: false).Build();
             }
 
             return result;
@@ -1002,7 +1003,8 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new SQLInsert(tableName, rows, 1, false).Build();
+            //return new SQLInsert(tableName, rows, 1, false).Build();
+            return string.Empty;
         }
 
         [BuilderMethod]
@@ -1041,7 +1043,8 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new SQLInsert(tableName, rows, 1, false).Build();
+            //return new SQLInsert(tableName, rows, 1, false).Build();
+            return string.Empty;
         }
 
         [BuilderMethod]
@@ -1082,7 +1085,8 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new SQLInsert(tableName, rows, 1, false).Build();
+            //return new SQLInsert(tableName, rows, 1, false).Build();
+            return string.Empty;
         }
 
         [BuilderMethod(Units = true)]
@@ -1121,7 +1125,8 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            return new SQLInsert(tableName, rows, 1, false).Build();
+            //return new SQLInsert(tableName, rows, 1, false).Build();
+            return string.Empty;
         }
     }
 }

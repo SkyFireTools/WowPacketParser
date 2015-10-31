@@ -22,40 +22,40 @@ namespace WowPacketParser.SQL
 
     public class SQLWhere<T> where T : IDataModel
     {
-        private readonly ConditionsList<T> _conditions;
+        private readonly RowList<T> _row;
 
         private readonly bool _onlyPrimaryKeys;
 
-        public SQLWhere(ConditionsList<T> conditionsList, bool onlyPrimaryKeys = false)
+        public SQLWhere(RowList<T> rowList, bool onlyPrimaryKeys = false)
         {
-            _conditions = conditionsList;
+            _row = rowList;
             _onlyPrimaryKeys = onlyPrimaryKeys;
         }
 
-        public bool HasConditions => _conditions != null && _conditions.Count != 0;
+        public bool HasConditions => _row != null && _row.Count != 0;
 
         public string Build()
         {
-            if (_conditions == null || _conditions.Count == 0)
+            if (_row == null || _row.Count == 0)
                 return string.Empty;
 
             StringBuilder whereClause = new StringBuilder();
 
-            if (_conditions.GetPrimaryKeyCount() == 1)
+            if (_onlyPrimaryKeys && _row.GetPrimaryKeyCount() == 1)
             {
-                var field = SQLUtil.GetFields<T>().Single(f => f.Item2 == _conditions.GetFirstPrimaryKey());
+                var field = SQLUtil.GetFields<T>().Single(f => f.Item2 == _row.GetFirstPrimaryKey());
 
                 whereClause.Append(field.Item1);
-                if (_conditions.Count == 1)
+                if (_row.Count == 1)
                 {
                     whereClause.Append(" = ");
-                    whereClause.Append(field.Item2.GetValue(_conditions.First()));
+                    whereClause.Append(field.Item2.GetValue(_row.First()));
                 }
                 else
                 {
                     whereClause.Append(" IN (");
 
-                    foreach (Condition<T> c in _conditions)
+                    foreach (Row<T> c in _row)
                     {
                         object value = field.Item2.GetValue(c.Data);
                         whereClause.Append(SQLUtil.ToSQLValue(value));
@@ -72,7 +72,7 @@ namespace WowPacketParser.SQL
             }
             else
             {
-                foreach (Condition<T> c in _conditions)
+                foreach (Row<T> c in _row)
                 {
                     whereClause.Append("(");
                     foreach (var field in SQLUtil.GetFields<T>())
@@ -84,7 +84,7 @@ namespace WowPacketParser.SQL
                              field.Item3.Any(a => !a.IsPrimaryKey)))
                             continue;
 
-                        whereClause.Append(SQLUtil.AddBackQuotes(field.Item1));
+                        whereClause.Append(field.Item1);
 
                         whereClause.Append(" = ");
                         whereClause.Append(SQLUtil.ToSQLValue(value));
@@ -112,9 +112,9 @@ namespace WowPacketParser.SQL
 
         private readonly string _database;
 
-        public SQLSelect(ConditionsList<T> conditionList = null, string database = null, bool onlyPrimaryKeys = true)
+        public SQLSelect(RowList<T> rowList = null, string database = null, bool onlyPrimaryKeys = true)
         {
-            _whereClause = new SQLWhere<T>(conditionList, onlyPrimaryKeys);
+            _whereClause = new SQLWhere<T>(rowList, onlyPrimaryKeys);
             _database = database;
         }
 
@@ -127,7 +127,7 @@ namespace WowPacketParser.SQL
             
             foreach (var field in fields)
             {
-                fieldNames.Append(field.Item2);
+                fieldNames.Append(field.Item1);
                 fieldNames.Append(SQLUtil.CommaSeparator);
             }
             fieldNames.Remove(fieldNames.Length - 2, 2); // remove last ", "
@@ -146,7 +146,7 @@ namespace WowPacketParser.SQL
         /// <summary>
         /// Creates multiple update rows
         /// </summary>
-        /// <param name="rows">A list of <see cref="SQLUpdateRow"/> rows</param>
+        /// <param name="rows">A list of <see cref="SQLUpdateRow{T}"/> rows</param>
         public SQLUpdate(List<SQLUpdateRow<T>> rows)
         {
             Rows = rows;
@@ -170,6 +170,7 @@ namespace WowPacketParser.SQL
             return result.ToString();
         }
     }
+
     public class SQLUpdateRow<T> : ISQLQuery where T : IDataModel
     {
         /// <summary>
@@ -194,9 +195,9 @@ namespace WowPacketParser.SQL
         /// </summary>
         public int ValueCount => Values.Count;
 
-        public SQLUpdateRow(ConditionsList<T> conditions)
+        public SQLUpdateRow(RowList<T> row)
         {
-            WhereClause = new SQLWhere<T>(conditions, true);
+            WhereClause = new SQLWhere<T>(row, true);
         }
 
         /// <summary>
@@ -222,13 +223,9 @@ namespace WowPacketParser.SQL
         /// <param name="defaultValue">Default value (usually defined in database structure)</param>
         /// <param name="isFlag">If set to true the value, "0x" will be append to value</param>
         /// <param name="noQuotes">If value is a string and this is set to true, value will not be 'quoted' (SQL variables)</param>
-        public void AddValue<T>(string field, T value, T defaultValue, bool isFlag = false, bool noQuotes = false)
+        public void AddValue(string field, T value, T defaultValue, bool isFlag = false, bool noQuotes = false)
         {
-            // T used because it is compile time safe. We know that value and defaultValue got the same type
-
-// ReSharper disable CompareNonConstrainedGenericWithNull
             if (value == null)
-// ReSharper restore CompareNonConstrainedGenericWithNull
                 return;
 
             if (value is float || value is double)
@@ -284,13 +281,11 @@ namespace WowPacketParser.SQL
         }
     }
 
-    public class SQLInsert : ISQLQuery
+    public class SQLInsert<T> : ISQLQuery where  T : IDataModel
     {
-        private string Table { get; set; }
-        private List<SQLInsertRow> Rows { get; set; }
+        private RowList<T> Rows { get; set; }
         private string Delete { get; set; }
-        private string InsertHeader { get; set; }
-        private List<string> TableStructure { get; set; }
+        private readonly string _insertHeader;
         private readonly bool _deleteDuplicates;
 
         // Add a new insert header every 500 rows
@@ -300,16 +295,13 @@ namespace WowPacketParser.SQL
         /// Creates an insert query including the insert header and its rows
         /// Single primary key (for delete)
         /// </summary>
-        /// <param name="tableName">Table name</param>
         /// <param name="rows">A list of <see cref="SQLInsertRow"/> rows</param>
-        /// <param name="primaryKeyNumber">The number of primary keys. Only 1 and 2 supported.</param>
         /// <param name="withDelete">If set to false the full query will not include a delete query</param>
         /// <param name="ignore">If set to true the INSERT INTO query will be INSERT IGNORE INTO</param>
         /// <param name="deleteDuplicates">If set to true duplicated rows will be removed from final query</param>
-        public SQLInsert(string tableName, List<SQLInsertRow> rows, int primaryKeyNumber = 1, bool withDelete = true,
-            bool ignore = false, bool deleteDuplicates = true)
+        public SQLInsert(RowList<T> rows, bool withDelete = true, bool ignore = false,
+            bool deleteDuplicates = true)
         {
-            Table = tableName;
             Rows = rows;
             _deleteDuplicates = deleteDuplicates;
 
@@ -317,14 +309,14 @@ namespace WowPacketParser.SQL
                 return;
 
             // Get the field names from the first row that is not a comment
-            TableStructure = new List<string>();
+            /*TableStructure = new List<string>();
             var firstProperRow = Rows.Find(row => !row.NoData);
             if (firstProperRow != null)
                 TableStructure = firstProperRow.FieldNames;
             else
-                return; // empty insert
+                return; // empty insert*/
 
-            InsertHeader = new SQLInsertHeader(Table, TableStructure, ignore).Build();
+            _insertHeader = new SQLInsertHeader<T>(ignore).Build();
 
             if (!withDelete)
             {
@@ -332,45 +324,9 @@ namespace WowPacketParser.SQL
                 return;
             }
 
-            switch (primaryKeyNumber)
-            {
-                case 1:
-                {
-                    ICollection<string> values =
-                        rows.FindAll(row => !row.NoData)
-                            .Select(row => row.GetPrimaryKeysValues(primaryKeyNumber).First())
-                            .ToArray();
-                    var primaryKey = TableStructure[0];
-
-                    Delete = new SQLDelete(values, primaryKey, Table).Build();
-                    break;
-                }
-                case 2:
-                {
-                    ICollection<Tuple<string, string>> values =
-                        rows.FindAll(row => !row.NoData).Select(row => row.GetPrimaryKeysValues(primaryKeyNumber)).
-                            Select(vals => Tuple.Create(vals[0], vals[1])).ToArray();
-
-                    var primaryKeys = Tuple.Create(TableStructure[0], TableStructure[1]);
-
-                    Delete = new SQLDelete(values, primaryKeys, tableName).Build();
-                    break;
-                }
-                case 3:
-                {
-                    ICollection<Tuple<string, string, string>> values =
-                        rows.FindAll(row => !row.NoData).Select(row => row.GetPrimaryKeysValues(primaryKeyNumber)).
-                            Select(vals => Tuple.Create(vals[0], vals[1], vals[2])).ToArray();
-
-                    var primaryKeys = Tuple.Create(TableStructure[0], TableStructure[1], TableStructure[2]);
-
-                    Delete = new SQLDelete(values, primaryKeys, tableName).Build();
-                    break;
-                }
-                default:
-                    throw new ArgumentOutOfRangeException("primaryKeyNumber");
-            }
+            Delete = new SQLDelete<T>(values).Build();
         }
+
 
         /// <summary>
         /// Constructs the actual query
@@ -380,12 +336,12 @@ namespace WowPacketParser.SQL
         {
             // If we only have rows with comment, do not print any query
             if (Rows.All(row => row.NoData)) // still true if row count = 0
-                return "-- " + SQLUtil.AddBackQuotes(Table) + " has empty data." + Environment.NewLine;
+                return "-- " + SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()) + " has empty data." + Environment.NewLine;
 
             var query = new StringBuilder();
 
             query.Append(Delete); // Can be empty
-            query.Append(InsertHeader);
+            query.Append(_insertHeader);
 
             var count = 0;
             HashSet<string> rowStrings = new HashSet<string>();
@@ -395,7 +351,7 @@ namespace WowPacketParser.SQL
                 {
                     query.ReplaceLast(',', ';');
                     query.Append(Environment.NewLine);
-                    query.Append(InsertHeader);
+                    query.Append(_insertHeader);
                     count = 0;
                 }
                 string rowString = row.Build();
@@ -530,22 +486,14 @@ namespace WowPacketParser.SQL
         }
     }
 
-    public class SQLDelete : ISQLQuery
+    public class SQLDelete<T> : ISQLQuery where T: IDataModel
     {
         private readonly bool _between;
         private readonly uint _primaryKeyNumber;
 
-        private ISet<string> Values { get; set; }
-        private ISet<Tuple<string, string>> ValuesDouble { get; set; }
-        private ISet<Tuple<string, string, string>> ValuesTriple { get; set; }
+        private RowList<T> Rows { get; set; }
         private Tuple<string, string> ValuesBetweenDouble { get; set; }
         private Tuple<string, string, string> ValuesBetweenTriple { get; set; }
-
-        private string Table { get; set; }
-
-        private string PrimaryKey { get; set; }
-        private Tuple<string, string> PrimaryKeyDouble { get; set; }
-        private Tuple<string, string, string> PrimaryKeyTriple { get; set; }
 
         /// <summary>
         /// <para>Creates a delete query with a single primary key and an arbitrary number of values</para>
@@ -553,51 +501,11 @@ namespace WowPacketParser.SQL
         /// <code>DELETE FROM `tableName` WHERE `primaryKey`=values[0];</code>
         /// </summary>
         /// <param name="values">Collection of values to be deleted</param>
-        /// <param name="primaryKey">Field used in the WHERE clause</param>
-        /// <param name="tableName">Table name</param>
-        public SQLDelete(IEnumerable<string> values, string primaryKey, string tableName)
+        public SQLDelete(RowList<T> values )
         {
-            PrimaryKey = primaryKey;
-            Table = tableName;
-
-            Values = new HashSet<string>(values);
+            Rows = values;
             _between = false;
             _primaryKeyNumber = 1;
-        }
-
-        /// <summary>
-        /// <para>Creates a delete query that uses two primary keys and an arbitrary number of values</para>
-        /// <code>DELETE FROM `tableName` WHERE (`primaryKeys[0]`=values[0][0] AND `primaryKeys[1]`=values[1][0]) AND ...);</code>
-        /// </summary>
-        /// <param name="values">Collection of pairs of values to be deleted</param>
-        /// <param name="primaryKeys">Collection of pairs of fields used in the WHERE clause</param>
-        /// <param name="tableName">Table name</param>
-        public SQLDelete(IEnumerable<Tuple<string, string>> values, Tuple<string, string> primaryKeys, string tableName)
-        {
-            PrimaryKeyDouble = primaryKeys;
-            Table = tableName;
-
-            ValuesDouble = new HashSet<Tuple<string, string>>(values);
-            _between = false;
-            _primaryKeyNumber = 2;
-        }
-
-        /// <summary>
-        /// <para>Creates a delete query that uses two primary keys and an arbitrary number of values</para>
-        /// <code>DELETE FROM `tableName` WHERE (`primaryKeys[0]`=values[0][0] AND `primaryKeys[1]`=values[2][1][0]) AND ...);</code>
-        /// </summary>
-        /// <param name="values">Collection of pairs of values to be deleted</param>
-        /// <param name="primaryKeys">Collection of pairs of fields used in the WHERE clause</param>
-        /// <param name="tableName">Table name</param>
-        public SQLDelete(IEnumerable<Tuple<string, string, string>> values, Tuple<string, string, string> primaryKeys,
-            string tableName)
-        {
-            PrimaryKeyTriple = primaryKeys;
-            Table = tableName;
-
-            ValuesTriple = new HashSet<Tuple<string, string, string>>(values);
-            _between = false;
-            _primaryKeyNumber = 3;
         }
 
         /// <summary>
@@ -605,13 +513,8 @@ namespace WowPacketParser.SQL
         /// <code>DELETE FROM `tableName` WHERE `primaryKey` BETWEEN values[0] AND values[n];</code>
         /// </summary>
         /// <param name="values">Pair of values</param>
-        /// <param name="primaryKey">Field used in the WHERE clause</param>
-        /// <param name="tableName">Table name</param>
-        public SQLDelete(Tuple<string, string> values, string primaryKey, string tableName)
+        public SQLDelete(Tuple<string, string> values)
         {
-            PrimaryKey = primaryKey;
-            Table = tableName;
-
             ValuesBetweenDouble = values;
             _between = true;
             _primaryKeyNumber = 2;
@@ -623,12 +526,8 @@ namespace WowPacketParser.SQL
         /// </summary>
         /// <param name="values">Pair of values</param>
         /// <param name="primaryKey">Field used in the WHERE clause</param>
-        /// <param name="tableName">Table name</param>
-        public SQLDelete(Tuple<string, string, string> values, string primaryKey, string tableName)
+        public SQLDelete(Tuple<string, string, string> values)
         {
-            PrimaryKey = primaryKey;
-            Table = tableName;
-
             ValuesBetweenTriple = values;
             _between = true;
             _primaryKeyNumber = 3;
@@ -645,7 +544,7 @@ namespace WowPacketParser.SQL
             if (_between)
             {
                 query.Append("DELETE FROM ");
-                query.Append(SQLUtil.AddBackQuotes(Table));
+                query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
                 query.Append(" WHERE ");
 
                 switch (_primaryKeyNumber)
@@ -680,10 +579,10 @@ namespace WowPacketParser.SQL
                         var rowsPerDelete = 0;
 
                         query.Append("DELETE FROM ");
-                        query.Append(SQLUtil.AddBackQuotes(Table));
+                        query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
                         query.Append(" WHERE ");
 
-                        foreach (var tuple in ValuesDouble)
+                        foreach (var row in Rows)
                         {
                             counter++;
                             rowsPerDelete++;
@@ -710,7 +609,7 @@ namespace WowPacketParser.SQL
                                 {
                                     query.Append(Environment.NewLine);
                                     query.Append("DELETE FROM ");
-                                    query.Append(SQLUtil.AddBackQuotes(Table));
+                                    query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
                                     query.Append(" WHERE ");
                                 }
                             }
@@ -726,7 +625,7 @@ namespace WowPacketParser.SQL
                         var rowsPerDelete = 0;
 
                         query.Append("DELETE FROM ");
-                        query.Append(SQLUtil.AddBackQuotes(Table));
+                        query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
                         query.Append(" WHERE ");
 
                         foreach (var tuple in ValuesTriple)
@@ -760,7 +659,7 @@ namespace WowPacketParser.SQL
                                 {
                                     query.Append(Environment.NewLine);
                                     query.Append("DELETE FROM ");
-                                    query.Append(SQLUtil.AddBackQuotes(Table));
+                                    query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
                                     query.Append(" WHERE ");
                                 }
                             }
@@ -772,43 +671,43 @@ namespace WowPacketParser.SQL
                     default:
                     {
                         query.Append("DELETE FROM ");
-                        query.Append(SQLUtil.AddBackQuotes(Table));
+                        query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
                         query.Append(" WHERE ");
                         query.Append(SQLUtil.AddBackQuotes(PrimaryKey));
-                        query.Append(Values.Count == 1 ? "=" : " IN (");
+                        query.Append(Rows.Count == 1 ? "=" : " IN (");
 
                         var counter = 0;
                         var rowsPerDelete = 0;
 
-                        foreach (var entry in Values)
+                        foreach (var entry in Rows)
                         {
                             counter++;
                             rowsPerDelete++;
 
                             query.Append(entry);
                             // Append comma if not end of items
-                            if (Values.Count != counter)
+                            if (Rows.Count != counter)
                                 query.Append(SQLUtil.CommaSeparator);
-                            else if (Values.Count != 1 && Values.Count != counter)
+                            else if (Rows.Count != 1 && Rows.Count != counter)
                                 query.Append(")");
                             else if (rowsPerDelete == 25)
                             {
                                 rowsPerDelete = 0;
                                 query.Append(";");
 
-                                if (Values.Count != counter)
+                                if (Rows.Count != counter)
                                 {
                                     query.Append(Environment.NewLine);
                                     query.Append("DELETE FROM ");
-                                    query.Append(SQLUtil.AddBackQuotes(Table));
+                                    query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
                                     query.Append(" WHERE ");
                                     query.Append(SQLUtil.AddBackQuotes(PrimaryKey));
-                                    query.Append(Values.Count == 1 ? "=" : " IN (");
+                                    query.Append(Rows.Count == 1 ? "=" : " IN (");
                                 }
                             }
-                            else if (Values.Count == counter)
+                            else if (Rows.Count == counter)
                             {
-                                if (Values.Count != 1)
+                                if (Rows.Count != 1)
                                     query.Append(")");
                                 query.Append(";");
                             }
@@ -823,24 +722,19 @@ namespace WowPacketParser.SQL
         }
     }
 
-    internal class SQLInsertHeader : ISQLQuery
+    internal class SQLInsertHeader<T> : ISQLQuery where T : IDataModel
     {
-        private string Table { get; set; }
-        private ICollection<string> TableStructure { get; set; }
-        private bool Ignore { get; set; }
+        private readonly bool _ignore;
 
         /// <summary>
         /// <para>Creates the header of an INSERT query</para>
         /// <code>INSERT INTO `tableName` (fields[0], ..., fields[n]) VALUES</code>
         /// </summary>
-        /// <param name="tableName">Table name</param>
-        /// <param name="fields">Field names</param>
         /// <param name="ignore">If set to true the INSERT INTO query will be INSERT IGNORE INTO</param>
-        public SQLInsertHeader(string tableName, ICollection<string> fields, bool ignore = false)
+        public SQLInsertHeader(bool ignore = false)
         {
-            Table = tableName;
-            TableStructure = fields;
-            Ignore = ignore;
+            //TableStructure = fields;
+            _ignore = ignore;
         }
 
         /// <summary>
@@ -852,23 +746,17 @@ namespace WowPacketParser.SQL
             var query = new StringBuilder();
 
             query.Append("INSERT ");
-            query.Append(Ignore ? "IGNORE " : string.Empty);
+            query.Append(_ignore ? "IGNORE " : string.Empty);
             query.Append("INTO ");
-            query.Append(SQLUtil.AddBackQuotes(Table));
+            query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
 
-            if (TableStructure.Count != 0)
+            foreach (var field in SQLUtil.GetFields<T>())
             {
                 query.Append(" (");
 
-                var count = 0;
-                foreach (var column in TableStructure)
-                {
-                    count++;
-                    query.Append(SQLUtil.AddBackQuotes(column));
-                    // Append comma if not end of fields
-                    if (TableStructure.Count != count)
-                        query.Append(SQLUtil.CommaSeparator);
-                }
+                query.Append(field.Item1);
+                query.Append(SQLUtil.CommaSeparator);
+                query.Remove(query.Length - SQLUtil.CommaSeparator.Length, SQLUtil.CommaSeparator.Length); // remove last ", "
 
                 query.Append(")");
             }

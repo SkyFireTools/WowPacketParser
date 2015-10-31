@@ -187,17 +187,17 @@ namespace WowPacketParser.SQL.Builders
             if (count > 0)
             {
                 // delete query for GUIDs
-                var delete = new SQLDelete(Tuple.Create("@CGUID+0", "@CGUID+" + --count), "guid", tableName);
-                result.Append(delete.Build());
-                var sql = new SQLInsert(tableName, rows, withDelete: false);
-                result.Append(sql.Build());
+                //var delete = new SQLDelete(Tuple.Create("@CGUID+0", "@CGUID+" + --count), "guid", tableName);
+                //result.Append(delete.Build());
+                //var sql = new SQLInsert(tableName, rows, withDelete: false);
+                //result.Append(sql.Build());
 
                 if (Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_addon))
                 {
-                    var addonDelete = new SQLDelete(Tuple.Create("@CGUID+0", "@CGUID+" + count), "guid", addonTableName);
-                    result.Append(addonDelete.Build());
-                    var addonSql = new SQLInsert(addonTableName, addonRows, withDelete: false);
-                    result.Append(addonSql.Build());
+                    //var addonDelete = new SQLDelete(Tuple.Create("@CGUID+0", "@CGUID+" + count), "guid", addonTableName);
+                    //result.Append(addonDelete.Build());
+                    //var addonSql = new SQLInsert(addonTableName, addonRows, withDelete: false);
+                    //result.Append(addonSql.Build());
                 }
             }
 
@@ -329,12 +329,12 @@ namespace WowPacketParser.SQL.Builders
             if (count > 0)
             {
                 // delete query for GUIDs
-                var delete = new SQLDelete(Tuple.Create("@OGUID+0", "@OGUID+" + --count), "guid", tableName);
-                result.Append(delete.Build());
+                //var delete = new SQLDelete(Tuple.Create("@OGUID+0", "@OGUID+" + --count), "guid");
+                //result.Append(delete.Build());
             }
 
-            var sql = new SQLInsert(tableName, rows, withDelete: false);
-            result.Append(sql.Build());
+            //var sql = new SQLInsert(tableName, rows, withDelete: false);
+            //result.Append(sql.Build());
             return result.ToString();
         }
     }

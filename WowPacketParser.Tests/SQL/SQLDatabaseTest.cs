@@ -33,7 +33,7 @@ namespace WowPacketParser.Tests.SQL
             SQLConnector.Enabled = true;
             SQLConnector.Connect();
 
-            var cond = new ConditionsList<TestDataModel>
+            var cond = new RowList<TestDataModel>
             {
                 new TestDataModel {ID = 1, TestInt1 = 10, TestString1 = "a"},
                 new TestDataModel {ID = 1, TestInt1 = 20, TestInt2 = 6},

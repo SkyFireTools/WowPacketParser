@@ -48,7 +48,7 @@ namespace WowPacketParser.SQL.Builders
                     }
                 }
 
-                result += new SQLInsert("playercreateinfo_action", rows, 2).Build();
+                //result += new SQLInsert("playercreateinfo_action", rows, 2).Build();
             }
 
             if (!Storage.StartPositions.IsEmpty() && Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.playercreateinfo))
@@ -83,7 +83,7 @@ namespace WowPacketParser.SQL.Builders
                     }
                 }
 
-                result += new SQLInsert("playercreateinfo_spell", rows, 2).Build();
+                //result += new SQLInsert("playercreateinfo_spell", rows, 2).Build();
             }
 
             return result;
@@ -112,7 +112,8 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            return new SQLInsert(tableName, rows, 2, ignore: true, withDelete: false).Build();
+            //return new SQLInsert(tableName, rows, 2, ignore: true, withDelete: false).Build();
+            return string.Empty;
         }
 
         [BuilderMethod]
@@ -141,7 +142,8 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            return new SQLInsert(tableName, rows.ToList(), ignore: true, withDelete: false).Build();
+            //return new SQLInsert(tableName, rows.ToList(), ignore: true, withDelete: false).Build();
+            return String.Empty;
         }
 
         // Non-WDB data but nevertheless data that should be saved to gameobject_template
@@ -247,7 +249,8 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new SQLInsert(tableName, rows, 1, false).Build();
+            //return new SQLInsert(tableName, rows, 1, false).Build();
+            return String.Empty;
         }
 
         [BuilderMethod]
@@ -280,7 +283,8 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            return new SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();
+            //return new SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();
+            return string.Empty;
         }
     }
 }

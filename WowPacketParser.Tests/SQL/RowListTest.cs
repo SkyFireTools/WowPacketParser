@@ -9,7 +9,7 @@ using WowPacketParser.SQL;
 namespace WowPacketParser.Tests.SQL
 {
     [TestFixture]
-    public class ConditionListTest
+    public class RowListTest
     {
         [DBTableName("testData")]
         private class TestDataModel : IDataModel
@@ -30,7 +30,7 @@ namespace WowPacketParser.Tests.SQL
         [SetUp]
         public void Initialize()
         {
-            _condList = new ConditionsList<TestDataModel>
+            _condList = new RowList<TestDataModel>
             {
                 new TestDataModel {ID = 1, TestInt1 = 2},
                 new TestDataModel {ID = 3, TestInt1 = 4}
@@ -43,7 +43,7 @@ namespace WowPacketParser.Tests.SQL
             _condList = null;
         }
 
-        private ConditionsList<TestDataModel> _condList;
+        private RowList<TestDataModel> _condList;
 
         [Test]
         public void TestAdd()
@@ -78,7 +78,7 @@ namespace WowPacketParser.Tests.SQL
         {
             Assert.IsNotNull(_condList.GetEnumerator());
 
-            foreach (Condition<TestDataModel> c in _condList)
+            foreach (Row<TestDataModel> c in _condList)
                 Assert.IsNotNull(c);
         }
     }

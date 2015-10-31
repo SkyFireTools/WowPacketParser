@@ -93,7 +93,7 @@ namespace WowPacketParser.SQL.Builders
                         }
                 }
 
-                sql += new SQLInsert(tableName2, rows, 2).Build();
+                //sql += new SQLInsert(tableName2, rows, 2).Build();
 
             }
 

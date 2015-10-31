@@ -36,7 +36,7 @@ namespace WowPacketParser.Tests.SQL
         [Test]
         public void TestSQLSelectWithCond()
         {
-            var cond = new ConditionsList<TestData>
+            var cond = new RowList<TestData>
             {
                 new TestData {ID = 1, TestInt1 = 2, TestString1 = "string1"},
                 new TestData {ID = 2, TestInt1 = 3}
@@ -47,7 +47,7 @@ namespace WowPacketParser.Tests.SQL
                 new SQLSelect<TestData>(cond, onlyPrimaryKeys: false).Build());
 
             Assert.AreEqual(
-                "SELECT `ID`, `TestInt1`, `TestInt2`, `TestString1` FROM world.test_data WHERE (`ID` = 1) OR (`ID` = 2)",
+                "SELECT `ID`, `TestInt1`, `TestInt2`, `TestString1` FROM world.test_data WHERE `ID` IN (1, 2)",
                 new SQLSelect<TestData>(cond).Build());
         }
     }

@@ -277,7 +277,7 @@ namespace WowPacketParser.Parsing.Parsers
                 packet.ReadInt32("Price", i);
                 packet.ReadInt32("Display ID", i);
                 if (hasCondition[i])
-                    packet.ReadInt32("Condition ID", i);
+                    packet.ReadInt32("Row ID", i);
                 var maxCount = packet.ReadInt32("Max Count", i);
                 vendorItem.MaxCount = maxCount == -1 ? 0 : maxCount; // TDB
                 var buyCount = packet.ReadUInt32("Buy Count", i);

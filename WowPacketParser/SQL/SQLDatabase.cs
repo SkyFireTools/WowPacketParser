@@ -366,12 +366,12 @@ namespace WowPacketParser.SQL
         public static StoreBag<T> Get<T>(StoreBag<T> conditionList, string database = null)
             where T : IDataModel
         {
-            var cond = new ConditionsList<T>();
+            var cond = new RowList<T>();
             cond.AddRange(conditionList.Select(c => c.Item1));
             return Get(cond);
         } 
 
-        public static StoreBag<T> Get<T>(ConditionsList<T> conditionList = null, string database = null)
+        public static StoreBag<T> Get<T>(RowList<T> rowList = null, string database = null)
             where T : IDataModel
         {
             // TODO: Add new config option "Verify data against DB"
@@ -380,7 +380,7 @@ namespace WowPacketParser.SQL
 
             StoreBag<T> result = new StoreBag<T>();
 
-            using (var reader = SQLConnector.ExecuteQuery(new SQLSelect<T>(conditionList, database).Build()))
+            using (var reader = SQLConnector.ExecuteQuery(new SQLSelect<T>(rowList, database).Build()))
             {
                 if (reader == null)
                     return null;
