@@ -44,7 +44,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string QuestPOI()
         {
-            if (Storage.QuestPOIs.IsEmpty())
+            /*if (Storage.QuestPOIs.IsEmpty())
                 return String.Empty;
 
             var sql = string.Empty;
@@ -93,11 +93,12 @@ namespace WowPacketParser.SQL.Builders
                         }
                 }
 
-                //sql += new SQLInsert(tableName2, rows, 2).Build();
+                sql += new SQLInsert(tableName2, rows, 2).Build();
 
             }
 
-            return sql;
+            return sql;*/
+            return string.Empty;
         }
 
         [BuilderMethod]

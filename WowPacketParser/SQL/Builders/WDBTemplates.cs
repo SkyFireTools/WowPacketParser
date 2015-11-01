@@ -142,7 +142,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string NpcName()
         {
-            var result = "";
+            /*var result = "";
 
             if (Storage.UnitTemplates.IsEmpty())
                 return String.Empty;
@@ -153,7 +153,7 @@ namespace WowPacketParser.SQL.Builders
             const string tableName = "creature_template";
 
             if (SQLConnector.Enabled)
-            {/*
+            {
                 var rowsUpd = new List<SQLUpdateRow>();
 
                 foreach (var npcName in Storage.UnitTemplates)
@@ -186,10 +186,11 @@ namespace WowPacketParser.SQL.Builders
                     }
                 }
 
-                result += new SQLUpdate(rowsUpd).Build();*/
+                result += new SQLUpdate(rowsUpd).Build();
             }
 
-            return result;
+            return result;*/
+            return string.Empty;
         }
 
         [BuilderMethod]

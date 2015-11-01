@@ -41,7 +41,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod(Units = true)]
         public static string Creature(Dictionary<WowGuid, Unit> units)
         {
-            if (units.Count == 0)
+            /*if (units.Count == 0)
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature))
@@ -201,13 +201,14 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return result.ToString();
+            return result.ToString();*/
+            return string.Empty;
         }
 
         [BuilderMethod(Gameobjects = true)]
         public static string GameObject(Dictionary<WowGuid, GameObject> gameObjects)
         {
-            if (gameObjects.Count == 0)
+            /*if (gameObjects.Count == 0)
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.gameobject))
@@ -329,13 +330,15 @@ namespace WowPacketParser.SQL.Builders
             if (count > 0)
             {
                 // delete query for GUIDs
-                //var delete = new SQLDelete(Tuple.Create("@OGUID+0", "@OGUID+" + --count), "guid");
-                //result.Append(delete.Build());
+                var delete = new SQLDelete(Tuple.Create("@OGUID+0", "@OGUID+" + --count), "guid");
+                result.Append(delete.Build());
             }
 
-            //var sql = new SQLInsert(tableName, rows, withDelete: false);
-            //result.Append(sql.Build());
-            return result.ToString();
+            var sql = new SQLInsert(tableName, rows, withDelete: false);
+            result.Append(sql.Build());
+            return result.ToString();*/
+            return string.Empty;
+
         }
     }
 }

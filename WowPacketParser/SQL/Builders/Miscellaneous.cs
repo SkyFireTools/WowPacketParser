@@ -17,7 +17,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string StartInformation()
         {
-            var result = String.Empty;
+            /*var result = String.Empty;
 
             if (!Storage.StartActions.IsEmpty() && Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.playercreateinfo_action))
             {
@@ -86,13 +86,14 @@ namespace WowPacketParser.SQL.Builders
                 //result += new SQLInsert("playercreateinfo_spell", rows, 2).Build();
             }
 
-            return result;
+            return result;*/
+            return string.Empty;
         }
 
         [BuilderMethod]
         public static string ObjectNames()
         {
-            if (Storage.ObjectNames.IsEmpty())
+            /*if (Storage.ObjectNames.IsEmpty())
                 return string.Empty;
 
             const string tableName = "ObjectNames";
@@ -112,14 +113,14 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            //return new SQLInsert(tableName, rows, 2, ignore: true, withDelete: false).Build();
+            return new SQLInsert(tableName, rows, 2, ignore: true, withDelete: false).Build();*/
             return string.Empty;
         }
 
         [BuilderMethod]
         public static string SniffData()
         {
-            if (Storage.SniffData.IsEmpty())
+            /*if (Storage.SniffData.IsEmpty())
                 return String.Empty;
 
             const string tableName = "SniffData";
@@ -142,7 +143,7 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            //return new SQLInsert(tableName, rows.ToList(), ignore: true, withDelete: false).Build();
+            return new SQLInsert(tableName, rows.ToList(), ignore: true, withDelete: false).Build();*/
             return String.Empty;
         }
 
@@ -199,7 +200,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string DefenseMessage()
         {
-            if (Storage.DefenseMessages.IsEmpty())
+            /*if (Storage.DefenseMessages.IsEmpty())
                 return String.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.defense_message))
@@ -249,14 +250,14 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            //return new SQLInsert(tableName, rows, 1, false).Build();
+            return new SQLInsert(tableName, rows, 1, false).Build();*/
             return String.Empty;
         }
 
         [BuilderMethod]
         public static string WeatherUpdates()
         {
-            if (Storage.WeatherUpdates.IsEmpty())
+            /*if (Storage.WeatherUpdates.IsEmpty())
                 return String.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.weather_updates))
@@ -283,7 +284,7 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            //return new SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();
+            return new SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();*/
             return string.Empty;
         }
     }

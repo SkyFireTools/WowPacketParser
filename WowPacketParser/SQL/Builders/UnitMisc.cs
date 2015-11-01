@@ -17,7 +17,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod(Units = true)]
         public static string Addon(Dictionary<WowGuid, Unit> units)
         {
-            if (units.Count == 0)
+            /*if (units.Count == 0)
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_template_addon))
@@ -72,7 +72,7 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            //return new SQLInsert(tableName, rows).Build();
+            return new SQLInsert(tableName, rows).Build();*/
             return string.Empty;
         }
 
@@ -126,7 +126,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string NpcTrainer()
         {
-            if (Storage.NpcTrainers.IsEmpty())
+            /*if (Storage.NpcTrainers.IsEmpty())
                 return String.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_trainer))
@@ -156,14 +156,14 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            //return new SQLInsert(tableName, rows).Build();
+            return new SQLInsert(tableName, rows).Build();*/
             return string.Empty;
         }
 
         [BuilderMethod]
         public static string NpcVendor()
         {
-            if (Storage.NpcVendors.IsEmpty())
+            /*if (Storage.NpcVendors.IsEmpty())
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_vendor))
@@ -204,7 +204,8 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new SQLInsert<NpcVendor>(rows).Build();
+            return new SQLInsert<NpcVendor>(rows).Build();*/
+            return string.Empty;
         }
 
         [BuilderMethod(Units = true)]
@@ -264,7 +265,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod(Units = true)]
         public static string CreatureMovement(Dictionary<WowGuid, Unit> units)
         {
-            if (units.Count == 0)
+            /*if (units.Count == 0)
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_movement))
@@ -292,11 +293,11 @@ namespace WowPacketParser.SQL.Builders
                 row.Comment += " - MoveFlags: " + npc.Movement.Flags + " - MoveFlags2: " + npc.Movement.FlagsExtra;
                 row.Comment += " - Bytes1: " + npc.Bytes1 + " - Bytes2: " + npc.Bytes2 + " - UnitFlags: " + npc.UnitFlags;
                 row.Comment += " - UnitFlags2: " + npc.UnitFlags2;
-                 */
+                 
                 rows.Add(row);
             }
 
-            //return new SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();
+            return new SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();*/
             return string.Empty;
         }
 
@@ -308,7 +309,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string Loot()
         {
-            if (Storage.Loots.IsEmpty())
+            /*if (Storage.Loots.IsEmpty())
                 return String.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.LootTemplate))
@@ -341,7 +342,7 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            //return new SQLInsert(tableName, rows, 2).Build();
+            return new SQLInsert(tableName, rows, 2).Build();*/
             return string.Empty;
         }
 
@@ -350,7 +351,7 @@ namespace WowPacketParser.SQL.Builders
         {
             // TODO: This should be rewritten
 
-            if (Storage.Gossips.IsEmpty())
+            /*if (Storage.Gossips.IsEmpty())
                 return string.Empty;
 
             var result = "";
@@ -531,14 +532,15 @@ namespace WowPacketParser.SQL.Builders
                     result += new SQLInsert("gossip_menu_option", rows, 2).Build();
                 }
             }
-            */
-            return result;
+            
+            return result;*/
+            return string.Empty;
         }
 
         [BuilderMethod]
         public static string PointsOfInterest()
         {
-            if (Storage.GossipPOIs.IsEmpty())
+            /*if (Storage.GossipPOIs.IsEmpty())
                 return string.Empty;
 
             var result = string.Empty;
@@ -562,7 +564,7 @@ namespace WowPacketParser.SQL.Builders
                     }
                 }
 
-                /*var rowsUpd = new List<SQLUpdateRow>();
+                var rowsUpd = new List<SQLUpdateRow>();
 
                 foreach (var u in gossipPOIsTable)
                 {
@@ -578,7 +580,7 @@ namespace WowPacketParser.SQL.Builders
                     rowsUpd.Add(row);
                 }
 
-                result += new SQLUpdate(rowsUpd).Build();*/
+                result += new SQLUpdate(rowsUpd).Build();
             }
 
             if (Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.points_of_interest))
@@ -604,11 +606,12 @@ namespace WowPacketParser.SQL.Builders
                     count++;
                 }
 
-                //result += new SQLDelete(Tuple.Create("@ID+0", "@ID+" + (count - 1)), "entry", tableName).Build();
-                //result += new SQLInsert(tableName, rowsIns, withDelete: false).Build();
+                result += new SQLDelete(Tuple.Create("@ID+0", "@ID+" + (count - 1)), "entry", tableName).Build();
+                result += new SQLInsert(tableName, rowsIns, withDelete: false).Build();
             }
 
-            return result;
+            return result;*/
+            return string.Empty;
         }
 
         //                      entry, <minlevel, maxlevel>
@@ -900,7 +903,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string CreatureText()
         {
-            if (Storage.CreatureTexts.IsEmpty())
+            /*if (Storage.CreatureTexts.IsEmpty())
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_text))
@@ -977,7 +980,7 @@ namespace WowPacketParser.SQL.Builders
             var creatureTextDb = SQLDatabase.GetDict<uint, CreatureText>(entries);
             */
 
-            const string tableName = "creature_text";
+            /*const string tableName = "creature_text";
 
             var rows = new List<SQLInsertRow>();
             foreach (var text in Storage.CreatureTexts)
@@ -1003,14 +1006,14 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            //return new SQLInsert(tableName, rows, 1, false).Build();
+            return new SQLInsert(tableName, rows, 1, false).Build();*/
             return string.Empty;
         }
 
         [BuilderMethod]
         public static string VehicleAccessory()
         {
-            if (Storage.VehicleTemplateAccessorys.IsEmpty())
+            /*if (Storage.VehicleTemplateAccessorys.IsEmpty())
                 return String.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.vehicle_template_accessory))
@@ -1043,14 +1046,14 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            //return new SQLInsert(tableName, rows, 1, false).Build();
+            return new SQLInsert(tableName, rows, 1, false).Build();*/
             return string.Empty;
         }
 
         [BuilderMethod]
         public static string NpcSpellClick()
         {
-            if (Storage.NpcSpellClicks.IsEmpty())
+            /*if (Storage.NpcSpellClicks.IsEmpty())
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_spellclick_spells))
@@ -1085,14 +1088,14 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            //return new SQLInsert(tableName, rows, 1, false).Build();
+            return new SQLInsert(tableName, rows, 1, false).Build();*/
             return string.Empty;
         }
 
         [BuilderMethod(Units = true)]
         public static string NpcSpellClickMop(Dictionary<WowGuid, Unit> units)
         {
-            if (units.Count == 0)
+            /*if (units.Count == 0)
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_spellclick_spells))
@@ -1125,7 +1128,7 @@ namespace WowPacketParser.SQL.Builders
                 rows.Add(row);
             }
 
-            //return new SQLInsert(tableName, rows, 1, false).Build();
+            return new SQLInsert(tableName, rows, 1, false).Build();*/
             return string.Empty;
         }
     }
