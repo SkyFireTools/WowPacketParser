@@ -6,20 +6,6 @@ using WowPacketParser.Misc;
 
 namespace WowPacketParser.SQL
 {
-    public class DictionaryComparer : IEqualityComparer<Dictionary<string, object>>
-    {
-        public bool Equals(Dictionary<string, object> x, Dictionary<string, object> y)
-        {
-            return x.DictionaryEqual(y);
-        }
-
-        public int GetHashCode(Dictionary<string, object> obj)
-        {
-            // bad impl 2.0
-            return obj.Aggregate(0, (current, o) => current ^ o.GetHashCode());
-        }
-    }
-
     public class SQLWhere<T> where T : IDataModel
     {
         private readonly RowList<T> _conditions;
@@ -43,7 +29,7 @@ namespace WowPacketParser.SQL
 
             if (_onlyPrimaryKeys && _conditions.GetPrimaryKeyCount() == 1)
             {
-                var field = SQLUtil.GetFields<T>().Single(f => f.Item2 == _conditions.GetFirstPrimaryKey());
+                var field = SQLUtil.GetFields<T>().Single(f => f.Item2 == SQLUtil.GetFirstPrimaryKey<T>());
 
                 whereClause.Append(field.Item1);
                 if (_conditions.Count == 1)
@@ -141,16 +127,16 @@ namespace WowPacketParser.SQL
 
     public class SQLUpdate<T> : ISQLQuery where T : IDataModel
     {
-        private readonly List<SQLUpdateRow<T>> _rows;
+        private readonly Dictionary<Row<T>, RowList<T>> _rows2;
 
         /// <summary>
         /// Creates multiple update rows
         /// </summary>
         /// <param name="rows">A list of <see cref="SQLUpdateRow{T}"/> rows</param>
-        public SQLUpdate(List<SQLUpdateRow<T>> rows)
+        public SQLUpdate(Dictionary<Row<T>, RowList<T>> rows)
         {
-            _rows = rows;
-        }
+            _rows2 = rows;
+        } 
 
         /// <summary>
         /// Constructs the actual query
@@ -158,20 +144,23 @@ namespace WowPacketParser.SQL
         /// <returns>Multiple update rows</returns>
         public string Build()
         {
-            var result = new StringBuilder();
+            StringBuilder result = new StringBuilder();
 
-            var rowsStrings = _rows.Select(row => row.Build()).ToList();
+            var rowsStrings = _rows2.Select(row => new SQLUpdateRow<T>(row.Key, row.Value).Build());
 
-            foreach (var rowString in rowsStrings)
+            foreach (string rowString in rowsStrings)
+            {
+                if (string.IsNullOrEmpty(rowString))
+                    continue;
                 result.Append(rowString);
-
-            result.Append(Environment.NewLine);
+                result.Append(Environment.NewLine);
+            }
 
             return result.ToString();
         }
     }
 
-    public class SQLUpdateRow<T> : ISQLQuery where T : IDataModel
+    internal class SQLUpdateRow<T> : ISQLQuery where T : IDataModel
     {
         /// <summary>
         /// <para>The row will be commented out</para>
@@ -200,20 +189,30 @@ namespace WowPacketParser.SQL
                 query.Append("-- ");
 
             // Return empty if there are no values or where clause or no table name set
-            if (WhereClause.HasConditions)
+            if (!WhereClause.HasConditions)
                 return string.Empty;
 
             query.Append("UPDATE ");
             query.Append(SQLUtil.GetTableName<T>());
             query.Append(" SET ");
 
+            bool hasValues = false;
             foreach (var field in SQLUtil.GetFields<T>())
             {
+                object value = field.Item2.GetValue(_value.Data);
+
+                if (value == null)
+                    continue;
+
+                hasValues = true;
                 query.Append(field.Item1);
                 query.Append("=");
-                query.Append(SQLUtil.ToSQLValue(field.Item2.GetValue(_value.Data)));
+                query.Append(SQLUtil.ToSQLValue(value));
                 query.Append(SQLUtil.CommaSeparator);
             }
+            if (!hasValues)
+                return string.Empty;
+
             query.Remove(query.Length - SQLUtil.CommaSeparator.Length, SQLUtil.CommaSeparator.Length); // remove last ", "
 
             query.Append(" WHERE ");
@@ -222,7 +221,6 @@ namespace WowPacketParser.SQL
 
             if (!string.IsNullOrWhiteSpace(_value.Comment))
                 query.Append(" -- " + _value.Comment);
-            query.Append(Environment.NewLine);
 
             return query.ToString();
         }
@@ -259,15 +257,15 @@ namespace WowPacketParser.SQL
         {
             // If we only have rows with comment, do not print any query
             if (_rows.Count == 0)
-                return "-- " + SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()) + " has empty data." + Environment.NewLine;
+                return "-- " + SQLUtil.GetTableName<T>() + " has empty data." + Environment.NewLine;
 
-            var query = new StringBuilder();
+            StringBuilder query = new StringBuilder();
 
             if (_withDelete)
                 query.Append(new SQLDelete<T>(_rows).Build()); // Can be empty
             query.Append(_insertHeader);
 
-            var count = 0;
+            int count = 0;
             foreach (var row in _rows)
             {
                 if (count >= MaxRowsPerInsert)
@@ -278,17 +276,58 @@ namespace WowPacketParser.SQL
                     count = 0;
                 }
                 query.Append(new SQLInsertRow<T>(row).Build());
+                query.Append(Environment.NewLine);
                 count++;
             }
-
-            query.Append(Environment.NewLine);
             query.ReplaceLast(',', ';');
 
             return query.ToString();
         }
     }
 
-    public class SQLInsertRow<T> : ISQLQuery
+    internal class SQLInsertHeader<T> : ISQLQuery where T : IDataModel
+    {
+        private readonly bool _ignore;
+
+        /// <summary>
+        /// <para>Creates the header of an INSERT query</para>
+        /// <code>INSERT INTO `tableName` (fields[0], ..., fields[n]) VALUES</code>
+        /// </summary>
+        /// <param name="ignore">If set to true the INSERT INTO query will be INSERT IGNORE INTO</param>
+        public SQLInsertHeader(bool ignore = false)
+        {
+            //TableStructure = fields;
+            _ignore = ignore;
+        }
+
+        /// <summary>
+        /// Constructs the actual query
+        /// </summary>
+        /// <returns>Insert query header</returns>
+        public string Build()
+        {
+            StringBuilder query = new StringBuilder();
+
+            query.Append("INSERT ");
+            query.Append(_ignore ? "IGNORE " : string.Empty);
+            query.Append("INTO ");
+            query.Append(SQLUtil.GetTableName<T>());
+
+            query.Append(" (");
+            foreach (var field in SQLUtil.GetFields<T>())
+            {
+                query.Append(field.Item1);
+                query.Append(SQLUtil.CommaSeparator);
+            }
+            query.Remove(query.Length - SQLUtil.CommaSeparator.Length, SQLUtil.CommaSeparator.Length); // remove last ", "
+            query.Append(")");
+            query.Append(" VALUES" + Environment.NewLine);
+
+            return query.ToString();
+        }
+    }
+
+    internal class SQLInsertRow<T> : ISQLQuery
         where T : IDataModel
     {
         private readonly Row<T> _row; 
@@ -339,9 +378,12 @@ namespace WowPacketParser.SQL
 
             query.Append("(");
 
-            foreach (object value in SQLUtil.GetFields<T>().Select(field => field.Item2.GetValue(_row)))
+            foreach (object value in SQLUtil.GetFields<T>().Select(field => field.Item2.GetValue(_row.Data)))
             {
-                query.Append(SQLUtil.ToSQLValue(value));
+                if (value == null)
+                    query.Append("NULL");
+                else
+                    query.Append(SQLUtil.ToSQLValue(value));
                 query.Append(SQLUtil.CommaSeparator);
             }
             query.Remove(query.Length - SQLUtil.CommaSeparator.Length, SQLUtil.CommaSeparator.Length); // remove last ", "
@@ -349,7 +391,6 @@ namespace WowPacketParser.SQL
 
             if (!string.IsNullOrWhiteSpace(_row.Comment))
                 query.Append(" -- " + _row.Comment);
-            query.Append(Environment.NewLine);
 
             return query.ToString();
         }
@@ -403,14 +444,14 @@ namespace WowPacketParser.SQL
         /// <returns>Delete query</returns>
         public string Build()
         {
-            var query = new StringBuilder();
+            StringBuilder query = new StringBuilder();
 
             if (_between)
             {
-                var pk = SQLUtil.GetFields<T>().Single(f => f.Item2 == _rows.GetFirstPrimaryKey());
+                var pk = SQLUtil.GetFields<T>().Single(f => f.Item2 == SQLUtil.GetFirstPrimaryKey<T>());
 
                 query.Append("DELETE FROM ");
-                query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
+                query.Append(SQLUtil.GetTableName<T>());
                 query.Append(" WHERE ");
 
                 query.Append(pk.Item1);
@@ -423,58 +464,13 @@ namespace WowPacketParser.SQL
             else
             {
                 query.Append("DELETE FROM ");
-                query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
+                query.Append(SQLUtil.GetTableName<T>());
                 query.Append(" WHERE ");
                 query.Append(new SQLWhere<T>(_rows, true).Build());
                 query.Append(";");
             }
 
             query.Append(Environment.NewLine);
-            return query.ToString();
-        }
-    }
-
-    internal class SQLInsertHeader<T> : ISQLQuery where T : IDataModel
-    {
-        private readonly bool _ignore;
-
-        /// <summary>
-        /// <para>Creates the header of an INSERT query</para>
-        /// <code>INSERT INTO `tableName` (fields[0], ..., fields[n]) VALUES</code>
-        /// </summary>
-        /// <param name="ignore">If set to true the INSERT INTO query will be INSERT IGNORE INTO</param>
-        public SQLInsertHeader(bool ignore = false)
-        {
-            //TableStructure = fields;
-            _ignore = ignore;
-        }
-
-        /// <summary>
-        /// Constructs the actual query
-        /// </summary>
-        /// <returns>Insert query header</returns>
-        public string Build()
-        {
-            StringBuilder query = new StringBuilder();
-
-            query.Append("INSERT ");
-            query.Append(_ignore ? "IGNORE " : string.Empty);
-            query.Append("INTO ");
-            query.Append(SQLUtil.AddBackQuotes(SQLUtil.GetTableName<T>()));
-
-            foreach (var field in SQLUtil.GetFields<T>())
-            {
-                query.Append(" (");
-
-                query.Append(field.Item1);
-                query.Append(SQLUtil.CommaSeparator);
-                query.Remove(query.Length - SQLUtil.CommaSeparator.Length, SQLUtil.CommaSeparator.Length); // remove last ", "
-
-                query.Append(")");
-            }
-
-            query.Append(" VALUES" + Environment.NewLine);
-
             return query.ToString();
         }
     }

@@ -145,7 +145,7 @@ namespace WowPacketParser.SQL
 
             //convert CamelCase name to camel_case
             string name = typeof(T).Name;
-            return string.Concat(name.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString().ToLower() : x.ToString().ToLower()));
+            return AddBackQuotes(string.Concat(name.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString().ToLower() : x.ToString().ToLower())));
         }
 
 
@@ -168,6 +168,16 @@ namespace WowPacketParser.SQL
             return fields;
         }
 
+        public static FieldInfo GetFirstPrimaryKey<T>()
+        {
+            FieldInfo pk = GetFields<T>().Where(f => f.Item3.Any(g => g.IsPrimaryKey)).Select(f => f.Item2).FirstOrDefault();
+
+            if (pk == null)
+                throw new InvalidOperationException();
+
+            return pk;
+        }
+
         /// <summary>
         /// <para>Compare two dictionaries (of the same types) and creates SQL inserts
         ///  or updates accordingly.</para>
@@ -175,42 +185,45 @@ namespace WowPacketParser.SQL
         /// <remarks>Use DBTableName and DBFieldName attributes to specify table and field names, in TK</remarks>
         /// </summary>
         /// <typeparam name="T">Type of the primary key (uint)</typeparam>
-        /// <typeparam name="TK">Type of the WDB struct (field types must match DB field)</typeparam>
-        /// <param name="dict1">Dictionary retrieved from  parser</param>
-        /// <param name="dict2">Dictionary retrieved from  DB</param>
+        /// <param name="storeList">Dictionary retrieved from  parser</param>
+        /// <param name="dbList">Dictionary retrieved from  DB</param>
         /// <param name="storeType">Are we dealing with Spells, Quests, Units, ...?</param>
-        /// <param name="primaryKeyName">The name of the primary key, usually "entry"</param>
         /// <returns>A string containing full SQL queries</returns>
-        public static string Compare<T>(StoreBag<T> bag1, StoreBag<T> bag2, StoreNameType storeType)
+        public static string Compare<T>(StoreBag<T> storeList, RowList<T> dbList, StoreNameType storeType)
+            where T : IDataModel
         {
-            /*var tableAttrs = (DBTableNameAttribute[])typeof(T).GetCustomAttributes(typeof(DBTableNameAttribute), false);
-            if (tableAttrs.Length <= 0)
-                return string.Empty;
-            var tableName = tableAttrs[0].Name;
-
-            var fields = Utilities.GetFieldsAndAttributes<T, DBFieldNameAttribute>();
+            var fields = GetFields<T>();
             if (fields == null)
                 return string.Empty;
 
-            fields.RemoveAll(field => field.Item2.Name == null);
+            var rowsIns = new RowList<T>();
+            var rowsUpd = new Dictionary<Row<T>, RowList<T>>();
 
-            var rowsIns = new List<SQLInsertRow>();
-            var rowsUpd = new List<SQLUpdateRow>();
-
-            foreach (var elem1 in bag1.ToList())
+            foreach (var elem1 in storeList)
             {
-                if (bag2 != null && bag2.ContainsKey(elem1.Item1)) // update
+                if (dbList != null && dbList.ContainsKey(elem1.Item1)) // update
                 {
-                    var row = new SQLUpdateRow();
+
+                    var lastField = fields[fields.Count - 1];
+                    var verBuildField = fields.FirstOrDefault(f => f.Item2.Name == "VerifiedBuild");
+                    if (verBuildField != null)
+                    {
+                        int buildvSniff = (int)lastField.Item2.GetValue(elem1.Item1);
+                        int buildvDB = (int)lastField.Item2.GetValue(dbList[elem1.Item1].Data);
+
+                        if (buildvDB > buildvSniff) // skip update if DB already has a VerifiedBuild higher than this one
+                            continue;
+                    }
+
+                    var row = new Row<T>();
+                    T elem2 = dbList[elem1.Item1].Data;
 
                     foreach (var field in fields)
                     {
-                        var elem2 = bag2[elem1.Item1];
+                        object val1 = field.Item2.GetValue(elem1.Item1);
+                        object val2 = field.Item2.GetValue(elem2);
 
-                        var val1 = field.Item1.GetValue(elem1.Item1);
-                        var val2 = field.Item1.GetValue(elem2.Item1);
-
-                        var arr1 = val1 as Array;
+                        /*Array arr1 = val1 as Array;
                         if (arr1 != null)
                         {
                             var arr2 = (Array)val2;
@@ -227,45 +240,31 @@ namespace WowPacketParser.SQL
                             }
 
                             continue;
-                        }
+                        }*/
 
                         if ((val2 is Array) && val1 == null)
                             continue;
 
-                        if (!Utilities.EqualValues(val1, val2))
-                            row.AddValue(field.Item2.Name, val1);
+                        if (Utilities.EqualValues(val1, val2))
+                            field.Item2.SetValue(elem1.Item1, null);
                     }
 
-                    var key = Convert.ToUInt32(elem1.Key);
+                    int key = Convert.ToInt32(GetFirstPrimaryKey<T>().GetValue(elem1.Item1));
+                    row.Comment = StoreGetters.GetName(storeType, key, false);
 
-                    row.AddWhere(primaryKeyName, key);
-                    row.Comment = StoreGetters.GetName(storeType, (int)key, false);
-                    row.Table = tableName;
-
-                    if (row.ValueCount == 0)
-                        continue;
-
-                    var lastField = fields[fields.Count - 1];
-                    if (lastField.Item2.Name == "VerifiedBuild")
-                    {
-                        var buildvSniff = (int)lastField.Item1.GetValue(elem1.Value.Item1);
-                        var buildvDB = (int)lastField.Item1.GetValue(dict2[elem1.Key].Item1);
-
-                        if (buildvDB > buildvSniff) // skip update if DB already has a VerifiedBuild higher than this one
-                            continue;
-                    }
-
-                    rowsUpd.Add(row);
+                    row.Data = elem1.Item1;
+                    rowsUpd.Add(row, new RowList<T>().Add(elem2));
                 }
                 else // insert new
                 {
-                    var row = new SQLInsertRow();
-                    row.AddValue(primaryKeyName, elem1.Key);
-                    row.Comment = StoreGetters.GetName(storeType, Convert.ToInt32(elem1.Key), false);
+                    var row = new Row<T>();
+
+                    int key = Convert.ToInt32(GetFirstPrimaryKey<T>().GetValue(elem1.Item1));
+                    row.Comment = StoreGetters.GetName(storeType, key, false);
 
                     foreach (var field in fields)
                     {
-                        if (field.Item1.FieldType.BaseType == typeof(Array))
+                        /*if (field.Item1.FieldType.BaseType == typeof(Array))
                         {
                             var arr = (Array)field.Item1.GetValue(elem1.Value.Item1);
                             if (arr == null)
@@ -275,23 +274,15 @@ namespace WowPacketParser.SQL
                                 row.AddValue(field.Item2.Name + (field.Item2.StartAtZero ? i : i + 1), arr.GetValue(i));
 
                             continue;
-                        }
-
-                        var val = field.Item1.GetValue(elem1.Value.Item1);
-                        if (val == null && field.Item1.FieldType == typeof(string))
-                            val = string.Empty;
-
-                        row.AddValue(field.Item2.Name, val);
+                        }*/
                     }
+                    row.Data = elem1.Item1;
                     rowsIns.Add(row);
                 }
             }
 
-            var result = new SQLInsert(tableName, rowsIns, deleteDuplicates: false).Build() +
-                         new SQLUpdate(rowsUpd).Build();
-
-            return result;*/
-            return string.Empty;
+            return new SQLInsert<T>(rowsIns).Build() +
+                   new SQLUpdate<T>(rowsUpd).Build();
         }
 
         /// <summary>
@@ -594,7 +585,7 @@ namespace WowPacketParser.SQL
                 return string.Empty;
             var tableName = tableAttrs[0].Name;
 
-            var fields = Utilities.GetFieldsAndAttribute<TK, DBFieldNameAttribute>();
+            var fields = Utilities.GetFieldsAndAttributes<TK, DBFieldNameAttribute>();
             if (fields == null)
                 return string.Empty;
 

@@ -7,30 +7,30 @@ namespace WowPacketParser.Store.Objects
     public sealed class NpcVendor : IDataModel
     {
         [DBFieldName("entry", true)]
-        public uint Entry;
+        public uint? Entry;
 
         [DBFieldName("slot")]
-        public int Slot;
+        public int? Slot;
 
         [DBFieldName("item", true)]
-        public int Item;
+        public int? Item;
 
         [DBFieldName("maxcount")]
-        public uint MaxCount;
+        public uint? MaxCount;
 
-        [DBFieldName("ExtentedCost", true)]
-        public uint ExtendedCost;
+        [DBFieldName("ExtendedCost", true)]
+        public uint? ExtendedCost;
 
         [DBFieldName("type", true)]
-        public uint Type;
+        public uint? Type;
 
-        [DBFieldName("PlayderConditionID")]
-        public int PlayerConditionID;
+        [DBFieldName("PlayerConditionID")]
+        public uint? PlayerConditionID;
 
         [DBFieldName("IgnoreFiltering")]
-        public bool IgnoreFiltering;
+        public bool? IgnoreFiltering;
 
         [DBFieldName("VerifiedBuild")]
-        public int VerifiedBuild = ClientVersion.BuildInt;
+        public int? VerifiedBuild = ClientVersion.BuildInt;
     }
 }

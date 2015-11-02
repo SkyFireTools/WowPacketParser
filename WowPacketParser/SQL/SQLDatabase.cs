@@ -112,7 +112,7 @@ namespace WowPacketParser.SQL
             LoadQuestTemplateLocale();
             LoadQuestObjectivesLocale();
             // MapDifficulty
-            LoadMapDifficulty();
+            //LoadMapDifficulty();
 
             var endTime = DateTime.Now;
             var span = endTime.Subtract(startTime);
@@ -363,7 +363,7 @@ namespace WowPacketParser.SQL
             return values;
         }
 
-        public static StoreBag<T> Get<T>(StoreBag<T> conditionList, string database = null)
+        public static RowList<T> Get<T>(StoreBag<T> conditionList, string database = null)
             where T : IDataModel
         {
             var cond = new RowList<T>();
@@ -371,14 +371,14 @@ namespace WowPacketParser.SQL
             return Get(cond);
         } 
 
-        public static StoreBag<T> Get<T>(RowList<T> rowList = null, string database = null)
+        public static RowList<T> Get<T>(RowList<T> rowList = null, string database = null)
             where T : IDataModel
         {
             // TODO: Add new config option "Verify data against DB"
             if (!SQLConnector.Enabled)
                 return null;
 
-            StoreBag<T> result = new StoreBag<T>();
+            RowList<T> result = new RowList<T>();
 
             using (var reader = SQLConnector.ExecuteQuery(new SQLSelect<T>(rowList, database).Build()))
             {
@@ -417,13 +417,15 @@ namespace WowPacketParser.SQL
                         }
                         else if (field.Item2.FieldType == typeof(bool))
                             field.Item2.SetValue(instance, Convert.ToBoolean(values[i]));
+                        else if (Nullable.GetUnderlyingType(field.Item2.FieldType) != null) // is nullable
+                            field.Item2.SetValue(instance, Convert.ChangeType(values[i], Nullable.GetUnderlyingType(field.Item2.FieldType)));
                         else
                             field.Item2.SetValue(instance, values[i]);
 
                         i += field.Item3.Count;
                     }
 
-                    result.Add(instance, null);
+                    result.Add(instance);
                 }
             }
 

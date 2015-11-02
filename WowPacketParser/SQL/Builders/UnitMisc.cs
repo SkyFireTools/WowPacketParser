@@ -163,7 +163,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string NpcVendor()
         {
-            /*if (Storage.NpcVendors.IsEmpty())
+            if (Storage.NpcVendors.IsEmpty())
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_vendor))
@@ -171,7 +171,9 @@ namespace WowPacketParser.SQL.Builders
 
             var templatesDb = SQLDatabase.Get(Storage.NpcVendors);
 
-            var rows = new List<SQLInsertRow>();
+            return SQLUtil.Compare(Storage.NpcVendors, templatesDb, StoreNameType.Unit);
+
+            /*var rows = new List<SQLInsertRow>();
             foreach (var vendorGroup in Storage.NpcVendors.GroupBy(v =>v.Item1.Entry))
             {
                 var comment = new SQLInsertRow
@@ -205,7 +207,6 @@ namespace WowPacketParser.SQL.Builders
             }
 
             return new SQLInsert<NpcVendor>(rows).Build();*/
-            return string.Empty;
         }
 
         [BuilderMethod(Units = true)]
@@ -903,7 +904,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string CreatureText()
         {
-            /*if (Storage.CreatureTexts.IsEmpty())
+            if (Storage.CreatureTexts.IsEmpty())
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_text))
@@ -1006,7 +1007,7 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new SQLInsert(tableName, rows, 1, false).Build();*/
+            return new SQLInsert(tableName, rows, 1, false).Build();
             return string.Empty;
         }
 
