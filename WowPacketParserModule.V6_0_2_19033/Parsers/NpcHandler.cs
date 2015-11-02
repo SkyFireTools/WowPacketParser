@@ -178,28 +178,23 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
         {
             uint entry = packet.ReadPackedGuid128("VendorGUID").GetEntry();
             packet.ReadByte("Reason");
-            var int9 = packet.ReadInt32("VendorItems");
+            var count = packet.ReadInt32("VendorItems");
 
-            for (var i = 0; i < int9; ++i)
+            for (var i = 0; i < count; ++i)
             {
                 NpcVendor vendor = new NpcVendor
                 {
                     Entry = entry,
                     Slot = packet.ReadInt32("Muid", i),
-                    Type = (uint)packet.ReadInt32("Type", i)
+                    Type = (uint)packet.ReadInt32("Type", i),
+                    Item = ItemHandler.ReadItemInstance(packet, i)
                 };
-
-                // ItemInstance
-                //if (ItemInstance)
-                {
-                    vendor.Item = ItemHandler.ReadItemInstance(packet, i);
-                }
 
                 var maxCount = packet.ReadInt32("Quantity", i);
                 packet.ReadInt32("Price", i);
                 packet.ReadInt32("Durability", i);
                 var buyCount = packet.ReadInt32("StackCount", i);
-                vendor.ExtendedCost = (uint)packet.ReadInt32("ExtendedCostID", i);
+                vendor.ExtendedCost = packet.ReadUInt32("ExtendedCostID", i);
                 vendor.PlayerConditionID = packet.ReadUInt32("PlayerConditionFailed", i);
 
                 packet.ResetBitReader();
@@ -275,8 +270,8 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
             var guid = packet.ReadPackedGuid128("SpellClickUnitGUID");
             packet.ReadBit("TryAutoDismount");
 
-            if (guid.GetObjectType() == ObjectType.Unit)
-                Storage.NpcSpellClicks.Add(guid, packet.TimeSpan);
+            /*if (guid.GetObjectType() == ObjectType.Unit)
+                Storage.NpcSpellClicks.Add(guid, packet.TimeSpan);*/
         }
 
         [Parser(Opcode.CMSG_BUY_BANK_SLOT)]

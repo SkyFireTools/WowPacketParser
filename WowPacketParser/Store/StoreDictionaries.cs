@@ -259,7 +259,7 @@ namespace WowPacketParser.Store
         }
     }
 
-    public class StoreBag<T> : Store, IEnumerable<Tuple<T, TimeSpan?>>
+    public class StoreBag<T> : Store, IEnumerable<Tuple<T, TimeSpan?>> where T : IDataModel
     {
         private readonly ConcurrentBag<Tuple<T, TimeSpan?>> _bag;
 

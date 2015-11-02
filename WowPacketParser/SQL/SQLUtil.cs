@@ -148,9 +148,7 @@ namespace WowPacketParser.SQL
             return AddBackQuotes(string.Concat(name.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString().ToLower() : x.ToString().ToLower())));
         }
 
-
-        // TODO: Add where T : IDataModel back after StoreBag is fixed
-        public static List<Tuple<string, FieldInfo, List<DBFieldNameAttribute>>> GetFields<T>()
+        public static List<Tuple<string, FieldInfo, List<DBFieldNameAttribute>>> GetFields<T>() where T : IDataModel
         {
             var fields = new List<Tuple<string, FieldInfo, List<DBFieldNameAttribute>>>();
             //fields.RemoveAll(field => field.Item2.Name == null);
@@ -168,7 +166,7 @@ namespace WowPacketParser.SQL
             return fields;
         }
 
-        public static FieldInfo GetFirstPrimaryKey<T>()
+        public static FieldInfo GetFirstPrimaryKey<T>() where T : IDataModel
         {
             FieldInfo pk = GetFields<T>().Where(f => f.Item3.Any(g => g.IsPrimaryKey)).Select(f => f.Item2).FirstOrDefault();
 
@@ -176,6 +174,17 @@ namespace WowPacketParser.SQL
                 throw new InvalidOperationException();
 
             return pk;
+        }
+
+        public static bool IsPrimaryKey(FieldInfo field)
+        {
+            return Utilities.GetAttributes<DBFieldNameAttribute>(field).Any(a => a.IsPrimaryKey);
+        }
+
+        public static string Compare<T>(StoreBag<T> storeList, RowList<T> dbList, StoreNameType storeType)
+            where T : IDataModel
+        {
+            return Compare(storeList, dbList, storeType, t => StoreGetters.GetName(storeType, Convert.ToInt32(GetFirstPrimaryKey<T>().GetValue(t)), false));
         }
 
         /// <summary>
@@ -188,8 +197,9 @@ namespace WowPacketParser.SQL
         /// <param name="storeList">Dictionary retrieved from  parser</param>
         /// <param name="dbList">Dictionary retrieved from  DB</param>
         /// <param name="storeType">Are we dealing with Spells, Quests, Units, ...?</param>
+        /// <param name="commentSetter"></param>
         /// <returns>A string containing full SQL queries</returns>
-        public static string Compare<T>(StoreBag<T> storeList, RowList<T> dbList, StoreNameType storeType)
+        public static string Compare<T>(StoreBag<T> storeList, RowList<T> dbList, StoreNameType storeType, Func<T, string> commentSetter)
             where T : IDataModel
         {
             var fields = GetFields<T>();
@@ -249,8 +259,7 @@ namespace WowPacketParser.SQL
                             field.Item2.SetValue(elem1.Item1, null);
                     }
 
-                    int key = Convert.ToInt32(GetFirstPrimaryKey<T>().GetValue(elem1.Item1));
-                    row.Comment = StoreGetters.GetName(storeType, key, false);
+                    row.Comment = commentSetter(elem1.Item1);
 
                     row.Data = elem1.Item1;
                     rowsUpd.Add(row, new RowList<T>().Add(elem2));
@@ -258,9 +267,6 @@ namespace WowPacketParser.SQL
                 else // insert new
                 {
                     var row = new Row<T>();
-
-                    int key = Convert.ToInt32(GetFirstPrimaryKey<T>().GetValue(elem1.Item1));
-                    row.Comment = StoreGetters.GetName(storeType, key, false);
 
                     foreach (var field in fields)
                     {
@@ -276,6 +282,9 @@ namespace WowPacketParser.SQL
                             continue;
                         }*/
                     }
+
+                    row.Comment = commentSetter(elem1.Item1);
+
                     row.Data = elem1.Item1;
                     rowsIns.Add(row);
                 }

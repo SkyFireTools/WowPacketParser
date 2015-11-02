@@ -255,10 +255,6 @@ namespace WowPacketParser.SQL
         /// <returns>Full insert AND delete queries</returns>
         public string Build()
         {
-            // If we only have rows with comment, do not print any query
-            if (_rows.Count == 0)
-                return "-- " + SQLUtil.GetTableName<T>() + " has empty data." + Environment.NewLine;
-
             StringBuilder query = new StringBuilder();
 
             if (_withDelete)
@@ -372,7 +368,7 @@ namespace WowPacketParser.SQL
             if (NoData)
                 return "-- " + _headerComment + Environment.NewLine;
 
-            var query = new StringBuilder();
+            StringBuilder query = new StringBuilder();
             if (CommentOut)
                 query.Append("-- ");
 

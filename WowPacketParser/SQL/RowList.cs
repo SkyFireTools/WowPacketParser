@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 
 namespace WowPacketParser.SQL
 {
@@ -28,6 +26,7 @@ namespace WowPacketParser.SQL
     public class RowList<T> : IEnumerable<Row<T>> where T : IDataModel
     {
         private readonly List<Row<T>> _rows = new List<Row<T>>();
+        private readonly Dictionary<string, int> _pkDict = new Dictionary<string, int>(); 
 
         /// <summary>
         /// Gets the number of conditions in the <see cref="RowList{T}" />.
@@ -66,6 +65,9 @@ namespace WowPacketParser.SQL
             if (ContainsKey(row))
                 return this;
 
+            string pkString = typeof(T).GetFields().Where(SQLUtil.IsPrimaryKey).Aggregate(string.Empty, (current, field) => current + (field.GetValue(row.Data) + "--"));
+
+            _pkDict.Add(pkString, _rows.Count);
             _rows.Add(row);
 
             return this;
@@ -82,9 +84,8 @@ namespace WowPacketParser.SQL
         public void Clear()
         {
             _rows.Clear();
+            _pkDict.Clear();
         }
-
-        
 
         public int GetPrimaryKeyCount()
         {
@@ -93,10 +94,9 @@ namespace WowPacketParser.SQL
 
         public bool ContainsKey(T key)
         {
-            var pks = SQLUtil.GetFields<T>().Where(f => f.Item3.Any(g => g.IsPrimaryKey));
+            string pkString = typeof(T).GetFields().Where(SQLUtil.IsPrimaryKey).Aggregate(string.Empty, (current, field) => current + (field.GetValue(key) + "--"));
 
-            return _rows.Count != 0 &&
-                   _rows.Any(r => pks.All(f => (f.Item2.GetValue(r.Data).Equals(f.Item2.GetValue(key)))));
+            return _pkDict.ContainsKey(pkString);
         }
 
         public bool ContainsKey(Row<T> key)
@@ -111,11 +111,14 @@ namespace WowPacketParser.SQL
                 if (!ContainsKey(key))
                     return null;
 
-                var pks = SQLUtil.GetFields<T>().Where(f => f.Item3.Any(g => g.IsPrimaryKey));
-                return _rows.Find(r => pks.All(f => (f.Item2.GetValue(r.Data).Equals(f.Item2.GetValue(key)))));
+                int index;
+                string pkString = typeof(T).GetFields().Where(SQLUtil.IsPrimaryKey).Aggregate(string.Empty, (current, field) => current + (field.GetValue(key) + "--"));
+                _pkDict.TryGetValue(pkString, out index);
+
+                return _rows[index];
             }
         }
 
-        public Row<T> this[Row<T> key] => this[key];
+        public Row<T> this[Row<T> key] => this[key.Data];
     }
 }

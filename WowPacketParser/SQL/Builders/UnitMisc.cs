@@ -171,7 +171,7 @@ namespace WowPacketParser.SQL.Builders
 
             var templatesDb = SQLDatabase.Get(Storage.NpcVendors);
 
-            return SQLUtil.Compare(Storage.NpcVendors, templatesDb, StoreNameType.Unit);
+            return SQLUtil.Compare(Storage.NpcVendors, templatesDb, StoreNameType.Unit, vendor => StoreGetters.GetName(vendor.Type <= 1 ? StoreNameType.Item : StoreNameType.Currency, vendor.Item.GetValueOrDefault(), false));
 
             /*var rows = new List<SQLInsertRow>();
             foreach (var vendorGroup in Storage.NpcVendors.GroupBy(v =>v.Item1.Entry))
@@ -904,7 +904,7 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string CreatureText()
         {
-            if (Storage.CreatureTexts.IsEmpty())
+            /*if (Storage.CreatureTexts.IsEmpty())
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_text))
@@ -1007,7 +1007,7 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new SQLInsert(tableName, rows, 1, false).Build();
+            return new SQLInsert(tableName, rows, 1, false).Build();*/
             return string.Empty;
         }
 
