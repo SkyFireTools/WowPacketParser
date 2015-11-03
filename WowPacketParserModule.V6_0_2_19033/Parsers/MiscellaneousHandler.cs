@@ -453,8 +453,8 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
 
             packet.ReadInt32("Unk");
 
-            var int32 = packet.ReadInt32("ItemCount");
-            var int16 = packet.ReadInt32("FlagsCount");
+            int int32 = packet.ReadInt32("ItemCount");
+            int int16 = packet.ReadInt32("FlagsCount");
 
             for (int i = 0; i < int32; i++)
                 packet.ReadInt32("ItemID", i);
@@ -466,18 +466,18 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
         [Parser(Opcode.SMSG_PLAY_SOUND)]
         public static void HandlePlaySound(Packet packet)
         {
-            var sound = packet.ReadUInt32("SoundKitID");
+            uint sound = packet.ReadUInt32("SoundKitID");
             packet.ReadPackedGuid128("SourceObjectGUID");
 
-            //Storage.Sounds.Add(sound, packet.TimeSpan);
+            Storage.Sounds.Add(sound, packet.TimeSpan);
         }
 
         [Parser(Opcode.SMSG_PLAY_MUSIC)]
         public static void HandlePlayMusic(Packet packet)
         {
-            var sound = packet.ReadUInt32("SoundKitID");
+            uint sound = packet.ReadUInt32("SoundKitID");
 
-            //Storage.Sounds.Add(sound, packet.TimeSpan);
+            Storage.Sounds.Add(sound, packet.TimeSpan);
         }
 
         [Parser(Opcode.SMSG_ZONE_UNDER_ATTACK)]

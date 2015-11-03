@@ -227,7 +227,7 @@ namespace WowPacketParserModule.V5_4_7_17898.Parsers
         {
             var guidBytes = new byte[8];
 
-            int count = (int)packet.ReadBits(19);
+            uint count = packet.ReadBits(19);
             guidBytes[3] = packet.ReadBit();
             guidBytes[2] = packet.ReadBit();
             guidBytes[0] = packet.ReadBit();
@@ -240,7 +240,7 @@ namespace WowPacketParserModule.V5_4_7_17898.Parsers
 
             packet.ReadXORByte(guidBytes, 3);
 
-            var tempList = new List<NpcTrainer>(count);
+            var tempList = new List<NpcTrainer>();
             for (int i = 0; i < count; ++i)
             {
                 NpcTrainer trainer = new NpcTrainer();
