@@ -152,14 +152,9 @@ namespace WowPacketParser.SQL
         {
             var fields = new List<Tuple<string, FieldInfo, List<DBFieldNameAttribute>>>();
             //fields.RemoveAll(field => field.Item2.Name == null);
-            foreach (var field in Utilities.GetFieldsAndAttributes<T, DBFieldNameAttribute>(false))
+            foreach (var field in Utilities.GetFieldsAndAttributes<T, DBFieldNameAttribute>())
             {
-                string fieldName;
-                if (field.Value == null)
-                    fieldName = AddBackQuotes(field.Key.Name);
-                else
-                    fieldName = field.Value.First().ToString();
-
+                string fieldName = field.Value.First().ToString();
                 fields.Add(new Tuple<string, FieldInfo, List<DBFieldNameAttribute>>(fieldName, field.Key, field.Value));
             }
 

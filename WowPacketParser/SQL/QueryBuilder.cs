@@ -380,7 +380,7 @@ namespace WowPacketParser.SQL
             foreach (object value in SQLUtil.GetFields<T>().Select(field => field.Item2.GetValue(_row.Data)))
             {
                 if (value == null)
-                    query.Append("NULL");
+                    query.Append("UNKNOWN");
                 else
                     query.Append(SQLUtil.ToSQLValue(value));
                 query.Append(SQLUtil.CommaSeparator);
