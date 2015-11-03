@@ -10,7 +10,7 @@ namespace WowPacketParser.Store
     {
         // Stores opcodes read, npc/GOs/spell/item/etc IDs found in sniffs
         // and other miscellaneous stuff
-        //public static readonly StoreBag<SniffData> SniffData = new StoreBag<SniffData>(new List<SQLOutput> { SQLOutput.SniffData, SQLOutput.SniffDataOpcodes });
+        public static readonly StoreBag<SniffData> SniffData = new StoreBag<SniffData>(new List<SQLOutput> { SQLOutput.SniffData, SQLOutput.SniffDataOpcodes });
 
         /* Key: Guid */
 
@@ -143,7 +143,7 @@ namespace WowPacketParser.Store
 
         public static void ClearContainers()
         {
-            //SniffData.Clear();
+            SniffData.Clear();
 
             Objects.Clear();
 
