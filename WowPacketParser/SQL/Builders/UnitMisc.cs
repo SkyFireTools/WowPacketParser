@@ -997,20 +997,19 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string NpcSpellClick()
         {
-            /*if (Storage.NpcSpellClicks.IsEmpty())
+            if (Storage.NpcSpellClicks.IsEmpty())
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_spellclick_spells))
                 return string.Empty;
 
-            const string tableName = "npc_spellclick_spells";
-            var rows = new List<SQLInsertRow>();
+            var rows = new RowList<NpcSpellClick>();
 
             foreach (var npcSpellClick in Storage.NpcSpellClicks)
             {
                 foreach (var spellClick in Storage.SpellClicks)
                 {
-                    var row = new SQLInsertRow();
+                    var row = new Row<NpcSpellClick>();
 
                     if (spellClick.Item1.CasterGUID.GetObjectType() == ObjectType.Unit && spellClick.Item1.TargetGUID.GetObjectType() == ObjectType.Unit)
                         spellClick.Item1.CastFlags = 0x0;
@@ -1021,10 +1020,8 @@ namespace WowPacketParser.SQL.Builders
                     if (spellClick.Item1.CasterGUID.GetObjectType() == ObjectType.Player && spellClick.Item1.TargetGUID.GetObjectType() == ObjectType.Player)
                         spellClick.Item1.CastFlags = 0x3;
 
-                    row.AddValue("npc_entry", npcSpellClick.Item1.GetEntry());
-                    row.AddValue("spell_id", spellClick.Item1.SpellId);
-                    row.AddValue("cast_flags", spellClick.Item1.CastFlags);
-                    row.AddValue("user_type", "x", false, true);
+                    spellClick.Item1.Entry = npcSpellClick.Item1.GetEntry();
+                    row.Data = spellClick.Item1;
 
                     var timeSpan = spellClick.Item2 - npcSpellClick.Item2;
                     if (timeSpan != null && timeSpan.Value.Duration() <= TimeSpan.FromSeconds(1))
@@ -1032,8 +1029,7 @@ namespace WowPacketParser.SQL.Builders
                 }
             }
 
-            return new SQLInsert(tableName, rows, 1, false).Build();*/
-            return string.Empty;
+            return new SQLInsert<NpcSpellClick>(rows, false).Build();
         }
 
         [BuilderMethod(Units = true)]

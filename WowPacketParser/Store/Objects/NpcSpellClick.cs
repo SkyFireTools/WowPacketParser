@@ -4,10 +4,13 @@ using WowPacketParser.SQL;
 namespace WowPacketParser.Store.Objects
 {
     [DBTableName("npc_spellclick_spells")]
-    public sealed class NpcSpellClick
+    public sealed class NpcSpellClick : IDataModel
     {
-        [DBFieldName("spell_id")]
-        public uint SpellId;
+        [DBFieldName("npc_entry", true)]
+        public uint Entry;
+
+        [DBFieldName("spell_id", true)]
+        public uint SpellID;
 
         [DBFieldName("cast_flags")]
         public uint CastFlags;

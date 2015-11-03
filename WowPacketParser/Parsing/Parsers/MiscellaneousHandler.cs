@@ -827,10 +827,10 @@ namespace WowPacketParser.Parsing.Parsers
         [Parser(Opcode.CMSG_SPELL_CLICK)]
         public static void HandleSpellClick(Packet packet)
         {
-            var guid = packet.ReadGuid("GUID");
+            WowGuid guid = packet.ReadGuid("GUID");
 
-            /*if (guid.GetObjectType() == ObjectType.Unit)
-                Storage.NpcSpellClicks.Add(guid, packet.TimeSpan);*/
+            if (guid.GetObjectType() == ObjectType.Unit)
+                Storage.NpcSpellClicks.Add(guid, packet.TimeSpan);
         }
 
         [Parser(Opcode.SMSG_START_TIMER)]

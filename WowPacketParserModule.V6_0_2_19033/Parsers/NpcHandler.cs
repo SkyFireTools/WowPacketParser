@@ -256,11 +256,11 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
         [Parser(Opcode.CMSG_SPELL_CLICK)]
         public static void HandleSpellClick(Packet packet)
         {
-            var guid = packet.ReadPackedGuid128("SpellClickUnitGUID");
+            WowGuid guid = packet.ReadPackedGuid128("SpellClickUnitGUID");
             packet.ReadBit("TryAutoDismount");
 
-            /*if (guid.GetObjectType() == ObjectType.Unit)
-                Storage.NpcSpellClicks.Add(guid, packet.TimeSpan);*/
+            if (guid.GetObjectType() == ObjectType.Unit)
+                Storage.NpcSpellClicks.Add(guid, packet.TimeSpan);
         }
 
         [Parser(Opcode.CMSG_BUY_BANK_SLOT)]

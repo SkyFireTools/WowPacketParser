@@ -133,8 +133,8 @@ namespace WowPacketParser.Store
         public static readonly DataBag<WeatherUpdate> WeatherUpdates = new DataBag<WeatherUpdate>(new List<SQLOutput> { SQLOutput.weather_updates });
 
         // Npc Spell Click
-        //public static readonly StoreBag<WowGuid> NpcSpellClicks = new StoreBag<WowGuid>(new List<SQLOutput> { SQLOutput.npc_spellclick_spells });
-        //public static readonly StoreBag<NpcSpellClick> SpellClicks = new StoreBag<NpcSpellClick>(new List<SQLOutput> { SQLOutput.npc_spellclick_spells });
+        public static readonly StoreBag<WowGuid> NpcSpellClicks = new StoreBag<WowGuid>(new List<SQLOutput> { SQLOutput.npc_spellclick_spells });
+        public static readonly DataBag<NpcSpellClick> SpellClicks = new DataBag<NpcSpellClick>(new List<SQLOutput> { SQLOutput.npc_spellclick_spells });
 
         // Quest Misc
         public static readonly StoreDictionary<Tuple<uint, string>, BroadcastTextLocale> BroadcastTextLocales = new StoreDictionary<Tuple<uint, string>, BroadcastTextLocale>(new List<HotfixSQLOutput> { HotfixSQLOutput.broadcast_text_locale });
@@ -200,8 +200,8 @@ namespace WowPacketParser.Store
 
             WeatherUpdates.Clear();
 
-            //NpcSpellClicks.Clear();
-            //SpellClicks.Clear();
+            NpcSpellClicks.Clear();
+            SpellClicks.Clear();
         }
     }
 }
