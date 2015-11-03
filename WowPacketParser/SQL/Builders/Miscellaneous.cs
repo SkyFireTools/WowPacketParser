@@ -120,31 +120,17 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string SniffData()
         {
-            /*if (Storage.SniffData.IsEmpty())
-                return String.Empty;
+            if (Storage.SniffData.IsEmpty())
+                return string.Empty;
 
-            const string tableName = "SniffData";
 
             if (Settings.DumpFormat != DumpFormatType.SniffDataOnly)
                 if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.SniffData) && !Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.SniffDataOpcodes))
                     return string.Empty;
 
-            var rows = new HashSet<SQLInsertRow>((IEqualityComparer<SQLInsertRow>)new SQLInsertRow());
-            foreach (var data in Storage.SniffData)
-            {
-                var row = new SQLInsertRow();
+            var templateDb = SQLDatabase.Get(Storage.SniffData);
 
-                row.AddValue("Build", ClientVersion.Build);
-                row.AddValue("SniffName", data.Item1.FileName);
-                row.AddValue("ObjectType", data.Item1.ObjectType.ToString());
-                row.AddValue("Id", data.Item1.Id);
-                row.AddValue("Data", data.Item1.Data);
-
-                rows.Add(row);
-            }
-
-            return new SQLInsert(tableName, rows.ToList(), ignore: true, withDelete: false).Build();*/
-            return String.Empty;
+            return SQLUtil.Compare(Storage.SniffData, templateDb, x => string.Empty);
         }
 
         // Non-WDB data but nevertheless data that should be saved to gameobject_template
