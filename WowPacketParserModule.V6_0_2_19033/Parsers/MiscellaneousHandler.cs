@@ -43,18 +43,18 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
         [Parser(Opcode.SMSG_WEATHER)]
         public static void HandleWeatherStatus(Packet packet)
         {
-            var state = packet.ReadInt32E<WeatherState>("State");
-            var grade = packet.ReadSingle("Intensity");
-            var unk = packet.ReadBit("Abrupt"); // Type
+            WeatherState state = packet.ReadInt32E<WeatherState>("State");
+            float grade = packet.ReadSingle("Intensity");
+            Bit unk = packet.ReadBit("Abrupt"); // Type
 
-            /*Storage.WeatherUpdates.Add(new WeatherUpdate
+            Storage.WeatherUpdates.Add(new WeatherUpdate
             {
                 MapId = CoreParsers.MovementHandler.CurrentMapId,
                 ZoneId = 0, // fixme
                 State = state,
                 Grade = grade,
                 Unk = unk
-            }, packet.TimeSpan);*/
+            }, packet.TimeSpan);
         }
 
         [Parser(Opcode.CMSG_SET_SELECTION)]

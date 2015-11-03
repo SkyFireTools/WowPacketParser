@@ -197,9 +197,9 @@ namespace WowPacketParserModule.V5_4_8_18291.Parsers
         [Parser(Opcode.SMSG_WEATHER)]
         public static void HandleWeatherStatus(Packet packet)
         {
-            var state = packet.ReadInt32E<WeatherState>("State");
-            var grade = packet.ReadSingle("Grade");
-            var unk = packet.ReadBit("Unk Bit"); // Type
+            WeatherState state = packet.ReadInt32E<WeatherState>("State");
+            float grade = packet.ReadSingle("Grade");
+            Bit unk = packet.ReadBit("Unk Bit"); // Type
 
             Storage.WeatherUpdates.Add(new WeatherUpdate
             {

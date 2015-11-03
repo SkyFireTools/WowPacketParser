@@ -130,7 +130,7 @@ namespace WowPacketParser.Store
         public static readonly StoreMulti<uint, VehicleTemplateAccessory> VehicleTemplateAccessorys = new StoreMulti<uint, VehicleTemplateAccessory>(new List<SQLOutput> { SQLOutput.vehicle_template_accessory });
 
         // Weather updates
-        //public static readonly StoreBag<WeatherUpdate> WeatherUpdates = new StoreBag<WeatherUpdate>(new List<SQLOutput> { SQLOutput.weather_updates });
+        public static readonly DataBag<WeatherUpdate> WeatherUpdates = new DataBag<WeatherUpdate>(new List<SQLOutput> { SQLOutput.weather_updates });
 
         // Npc Spell Click
         //public static readonly StoreBag<WowGuid> NpcSpellClicks = new StoreBag<WowGuid>(new List<SQLOutput> { SQLOutput.npc_spellclick_spells });
@@ -198,7 +198,7 @@ namespace WowPacketParser.Store
 
             VehicleTemplateAccessorys.Clear();
 
-            //WeatherUpdates.Clear();
+            WeatherUpdates.Clear();
 
             //NpcSpellClicks.Clear();
             //SpellClicks.Clear();
