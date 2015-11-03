@@ -1035,20 +1035,19 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod(Units = true)]
         public static string NpcSpellClickMop(Dictionary<WowGuid, Unit> units)
         {
-            /*if (units.Count == 0)
+            if (units.Count == 0)
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_spellclick_spells))
                 return string.Empty;
 
-            const string tableName = "npc_spellclick_spells";
-            var rows = new List<SQLInsertRow>();
+            var rows = new RowList<NpcSpellClick>();
 
             foreach (var unit in units)
             {
-                var row = new SQLInsertRow();
+                var row = new Row<NpcSpellClick>();
 
-                var npc = unit.Value;
+                Unit npc = unit.Value;
                 if (npc.InteractSpellID == null)
                     continue;
 
@@ -1060,16 +1059,13 @@ namespace WowPacketParser.SQL.Builders
                     if (!(npc.Map.ToString(CultureInfo.InvariantCulture).MatchesFilters(Settings.MapFilters)))
                         continue;
 
-                row.AddValue("npc_entry", unit.Key.GetEntry());
-                row.AddValue("spell_id", npc.InteractSpellID);
-                row.AddValue("cast_flags", "x", false, true);
-                row.AddValue("user_type", "x", false, true);
+                row.Data.Entry = unit.Key.GetEntry();
+                row.Data.SpellID = npc.InteractSpellID.GetValueOrDefault();
 
                 rows.Add(row);
             }
 
-            return new SQLInsert(tableName, rows, 1, false).Build();*/
-            return string.Empty;
+            return new SQLInsert<NpcSpellClick>(rows, false).Build();
         }
     }
 }
