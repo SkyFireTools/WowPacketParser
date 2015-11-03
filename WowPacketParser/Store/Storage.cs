@@ -74,7 +74,7 @@ namespace WowPacketParser.Store
         public static readonly StoreDictionary<uint, UnitTemplate> UnitTemplates = new StoreDictionary<uint, UnitTemplate>(new List<SQLOutput> { SQLOutput.creature_template });
 
         // Vendor & trainer
-        public static readonly StoreDictionary<uint, NpcTrainer> NpcTrainers = new StoreDictionary<uint, NpcTrainer>(new List<SQLOutput> { SQLOutput.npc_trainer });
+        public static readonly StoreBag<NpcTrainer> NpcTrainers = new StoreBag<NpcTrainer>(new List<SQLOutput> { SQLOutput.npc_trainer });
         public static readonly StoreBag<NpcVendor> NpcVendors = new StoreBag<NpcVendor>(new List<SQLOutput> { SQLOutput.npc_vendor });
 
         // Page & npc text

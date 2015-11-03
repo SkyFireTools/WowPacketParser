@@ -126,38 +126,15 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string NpcTrainer()
         {
-            /*if (Storage.NpcTrainers.IsEmpty())
-                return String.Empty;
+            if (Storage.NpcTrainers.IsEmpty())
+                return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_trainer))
                 return string.Empty;
 
-            const string tableName = "npc_trainer";
+            var templatesDb = SQLDatabase.Get(Storage.NpcTrainers);
 
-            var rows = new List<SQLInsertRow>();
-            foreach (var npcTrainer in Storage.NpcTrainers)
-            {
-                var comment = new SQLInsertRow
-                {
-                    HeaderComment = StoreGetters.GetName(StoreNameType.Unit, (int) npcTrainer.Key, false)
-                };
-                rows.Add(comment);
-                foreach (var trainerSpell in npcTrainer.Value.Item1.TrainerSpells)
-                {
-                    var row = new SQLInsertRow();
-                    row.AddValue("ID", npcTrainer.Key);
-                    row.AddValue("SpellID", trainerSpell.Spell);
-                    row.AddValue("MoneyCost", trainerSpell.Cost);
-                    row.AddValue("ReqSkillLine", trainerSpell.RequiredSkill);
-                    row.AddValue("ReqSkillRank", trainerSpell.RequiredSkillLevel);
-                    row.AddValue("ReqLevel", trainerSpell.RequiredLevel);
-                    row.Comment = StoreGetters.GetName(StoreNameType.Spell, (int)trainerSpell.Spell, false);
-                    rows.Add(row);
-                }
-            }
-
-            return new SQLInsert(tableName, rows).Build();*/
-            return string.Empty;
+            return SQLUtil.Compare(Storage.NpcTrainers, templatesDb, StoreNameType.Unit);
         }
 
         [BuilderMethod]
@@ -171,42 +148,8 @@ namespace WowPacketParser.SQL.Builders
 
             var templatesDb = SQLDatabase.Get(Storage.NpcVendors);
 
-            return SQLUtil.Compare(Storage.NpcVendors, templatesDb, StoreNameType.Unit, vendor => StoreGetters.GetName(vendor.Type <= 1 ? StoreNameType.Item : StoreNameType.Currency, vendor.Item.GetValueOrDefault(), false));
-
-            /*var rows = new List<SQLInsertRow>();
-            foreach (var vendorGroup in Storage.NpcVendors.GroupBy(v =>v.Item1.Entry))
-            {
-                var comment = new SQLInsertRow
-                {
-                    //HeaderComment = StoreGetters.GetName(StoreNameType.Unit, (int)vendorGroup.Key)
-                };
-                rows.Add(comment);
-                foreach (var vendor in vendorGroup.ToList())
-                {
-                    var row = new SQLInsertRow();
-                    //row.AddValue("entry", vendor.Item1.Entry);
-                    row.AddValue("item", vendor.Item1.Item);
-                    row.AddValue("slot", vendor.Item1.Slot);
-                    row.AddValue("maxcount", vendor.Item1.MaxCount);
-                    row.AddValue("ExtendedCost", vendor.Item1.ExtendedCost);
-
-                    if (ClientVersion.AddedInVersion(ClientType.Cataclysm))
-                        row.AddValue("Type", vendor.Item1.Type);
-
-                    if (ClientVersion.AddedInVersion(ClientType.MistsOfPandaria))
-                    {
-                        row.AddValue("PlayerConditionID", vendor.Item1.PlayerConditionID);
-                        row.AddValue("IgnoreFiltering", vendor.Item1.IgnoreFiltering);
-                    }
-
-                    row.AddValue("VerifiedBuild", vendor.Item1.VerifiedBuild);
-
-                    row.Comment = StoreGetters.GetName(vendor.Item1.Type <= 1 ? StoreNameType.Item : StoreNameType.Currency, vendor.Item1.Item, false);
-                    rows.Add(row);
-                }
-            }
-
-            return new SQLInsert<NpcVendor>(rows).Build();*/
+            return SQLUtil.Compare(Storage.NpcVendors, templatesDb,
+                vendor => StoreGetters.GetName(vendor.Type <= 1 ? StoreNameType.Item : StoreNameType.Currency, vendor.Item.GetValueOrDefault(), false));
         }
 
         [BuilderMethod(Units = true)]
