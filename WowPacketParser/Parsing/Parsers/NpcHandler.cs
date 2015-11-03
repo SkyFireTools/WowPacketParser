@@ -94,7 +94,7 @@ namespace WowPacketParser.Parsing.Parsers
             int count = packet.ReadInt32("Count");
             for (int i = 0; i < count; ++i)
             {
-                NpcTrainer npcTrainer = new NpcTrainer
+                NpcTrainer trainer = new NpcTrainer
                 {
                     ID = entry,
                     SpellID = packet.ReadInt32<SpellId>("Spell ID", i)
@@ -102,13 +102,13 @@ namespace WowPacketParser.Parsing.Parsers
 
                 packet.ReadByteE<TrainerSpellState>("State", i);
 
-                npcTrainer.MoneyCost = packet.ReadUInt32("Cost", i);
+                trainer.MoneyCost = packet.ReadUInt32("Cost", i);
 
                 if (ClientVersion.AddedInVersion(ClientVersionBuild.V4_0_6a_13623))
                 {
-                    npcTrainer.ReqLevel = packet.ReadByte("Required Level", i);
-                    npcTrainer.ReqSkillLine = packet.ReadUInt32("Required Skill", i);
-                    npcTrainer.ReqSkillRank = packet.ReadUInt32("Required Skill Level", i);
+                    trainer.ReqLevel = packet.ReadByte("Required Level", i);
+                    trainer.ReqSkillLine = packet.ReadUInt32("Required Skill", i);
+                    trainer.ReqSkillRank = packet.ReadUInt32("Required Skill Level", i);
                     if (ClientVersion.RemovedInVersion(ClientVersionBuild.V5_1_0_16309))
                     {
                         packet.ReadInt32<SpellId>("Chain Spell ID", i, 0);
@@ -123,9 +123,9 @@ namespace WowPacketParser.Parsing.Parsers
 
                 if (ClientVersion.RemovedInVersion(ClientVersionBuild.V4_0_6a_13623))
                 {
-                    npcTrainer.ReqLevel = packet.ReadByte("Required Level", i);
-                    npcTrainer.ReqSkillLine = packet.ReadUInt32("Required Skill", i);
-                    npcTrainer.ReqSkillRank = packet.ReadUInt32("Required Skill Level", i);
+                    trainer.ReqLevel = packet.ReadByte("Required Level", i);
+                    trainer.ReqSkillLine = packet.ReadUInt32("Required Skill", i);
+                    trainer.ReqSkillRank = packet.ReadUInt32("Required Skill Level", i);
                     packet.ReadInt32<SpellId>("Chain Spell ID", i, 0);
                     packet.ReadInt32<SpellId>("Chain Spell ID", i, 1);
                 }
@@ -133,7 +133,7 @@ namespace WowPacketParser.Parsing.Parsers
                 if (ClientVersion.RemovedInVersion(ClientVersionBuild.V4_0_6a_13623))
                     packet.ReadInt32("Unk Int32", i);
 
-                Storage.NpcTrainers.Add(npcTrainer, packet.TimeSpan);
+                Storage.NpcTrainers.Add(trainer, packet.TimeSpan);
             }
 
             packet.ReadCString("Title");
@@ -254,7 +254,7 @@ namespace WowPacketParser.Parsing.Parsers
 
             guidBytes[4] = packet.ReadBit();
 
-            List<NpcVendor> tempList = new List<NpcVendor>();
+            var tempList = new List<NpcVendor>();
             for (int i = 0; i < count; ++i)
             {
                 NpcVendor npcVendor = new NpcVendor

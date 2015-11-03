@@ -214,13 +214,13 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
         {
             NpcTrainer npcTrainer = new NpcTrainer();
 
-            var entry = packet.ReadPackedGuid128("TrainerGUID").GetEntry();
+            uint entry = packet.ReadPackedGuid128("TrainerGUID").GetEntry();
 
             packet.ReadInt32("TrainerType");
             packet.ReadInt32("TrainerID");
             int count = packet.ReadInt32("Spells");
 
-            for (var i = 0; i < count; ++i)
+            for (int i = 0; i < count; ++i)
             {
                 NpcTrainer trainer = new NpcTrainer
                 {
