@@ -127,7 +127,7 @@ namespace WowPacketParser.Store
         public static readonly StoreMulti<uint, DefenseMessage> DefenseMessages = new StoreMulti<uint, DefenseMessage>(new List<SQLOutput> { SQLOutput.defense_message });
 
         // Vehicle Template Accessory
-        public static readonly StoreMulti<uint, VehicleTemplateAccessory> VehicleTemplateAccessorys = new StoreMulti<uint, VehicleTemplateAccessory>(new List<SQLOutput> { SQLOutput.vehicle_template_accessory });
+        public static readonly StoreBag<VehicleTemplateAccessory> VehicleTemplateAccessorys = new StoreBag<VehicleTemplateAccessory>(new List<SQLOutput> { SQLOutput.vehicle_template_accessory });
 
         // Weather updates
         public static readonly DataBag<WeatherUpdate> WeatherUpdates = new DataBag<WeatherUpdate>(new List<SQLOutput> { SQLOutput.weather_updates });

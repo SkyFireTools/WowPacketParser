@@ -957,41 +957,29 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string VehicleAccessory()
         {
-            /*if (Storage.VehicleTemplateAccessorys.IsEmpty())
-                return String.Empty;
+            if (Storage.VehicleTemplateAccessorys.IsEmpty())
+                return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.vehicle_template_accessory))
                 return string.Empty;
 
-            const string tableName = "vehicle_template_accessory";
-
-            var rows = new List<SQLInsertRow>();
-            foreach (var accessorys in Storage.VehicleTemplateAccessorys)
+            var rows = new RowList<VehicleTemplateAccessory>();
+            foreach (var accessory in Storage.VehicleTemplateAccessorys)
             {
-                foreach (var accessorysValue in accessorys.Value)
-                {
-                    var row = new SQLInsertRow();
+                var row = new Row<VehicleTemplateAccessory>();
 
-                    if (accessorysValue.Item1.SeatId < 0 || accessorysValue.Item1.SeatId > 7)
-                        continue;
+                if (accessory.Item1.SeatId < 0 || accessory.Item1.SeatId > 7)
+                    continue;
 
-                    row.Comment = StoreGetters.GetName(StoreNameType.Unit, (int)accessorys.Key, false) + " - ";
-                    row.Comment += StoreGetters.GetName(StoreNameType.Unit, (int)accessorysValue.Item1.AccessoryEntry, false);
+                row.Comment = StoreGetters.GetName(StoreNameType.Unit, (int)accessory.Item1.Entry, false) + " - ";
+                row.Comment += StoreGetters.GetName(StoreNameType.Unit, (int)accessory.Item1.AccessoryEntry, false);
+                accessory.Item1.Description = row.Comment;
+                row.Data = accessory.Item1;
 
-                    row.AddValue("entry", accessorys.Key);
-                    row.AddValue("accessory_entry", accessorysValue.Item1.AccessoryEntry);
-                    row.AddValue("seat_id", accessorysValue.Item1.SeatId);
-                    row.AddValue("minion", "x", false, true);
-                    row.AddValue("description", row.Comment);
-                    row.AddValue("summontype", "x", false, true);
-                    row.AddValue("summontimer", "x", false, true);
-
-                    rows.Add(row);
-                }
+                rows.Add(row);
             }
 
-            return new SQLInsert(tableName, rows, 1, false).Build();*/
-            return string.Empty;
+            return new SQLInsert<VehicleTemplateAccessory>(rows, false).Build();
         }
 
         [BuilderMethod]
