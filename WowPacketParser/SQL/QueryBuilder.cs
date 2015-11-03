@@ -255,6 +255,9 @@ namespace WowPacketParser.SQL
         /// <returns>Full insert AND delete queries</returns>
         public string Build()
         {
+            if (_rows.Count == 0)
+                return string.Empty;
+
             StringBuilder query = new StringBuilder();
 
             if (_withDelete)
