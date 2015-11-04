@@ -202,50 +202,6 @@ namespace WowPacketParser.SQL.Builders
             return SQLUtil.Compare(equips, equipsDb, StoreNameType.Unit);
         }
 
-        [BuilderMethod(Units = true)]
-        public static string CreatureMovement(Dictionary<WowGuid, Unit> units)
-        {
-            /*if (units.Count == 0)
-                return string.Empty;
-
-            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_movement))
-                return string.Empty;
-
-            const string tableName = "creature_movement";
-
-            var rows = new List<SQLInsertRow>();
-            foreach (var unit in units)
-            {
-                var row = new SQLInsertRow();
-
-                var npc = unit.Value;
-
-                row.AddValue("Id", unit.Key.GetEntry());
-                row.AddValue("MovementFlags", npc.Movement.Flags, true);
-                row.AddValue("MovementFlagsExtra", npc.Movement.FlagsExtra, true);
-                row.AddValue("ufBytes1", npc.Bytes1, true);
-                row.AddValue("ufBytes2", npc.Bytes2, true);
-                row.AddValue("ufFlags", npc.UnitFlags, true);
-                row.AddValue("ufFlags2", npc.UnitFlags2, true);
-
-                row.Comment = StoreGetters.GetName(StoreNameType.Unit, (int)unit.Key.GetEntry(), false);
-                /*
-                row.Comment += " - MoveFlags: " + npc.Movement.Flags + " - MoveFlags2: " + npc.Movement.FlagsExtra;
-                row.Comment += " - Bytes1: " + npc.Bytes1 + " - Bytes2: " + npc.Bytes2 + " - UnitFlags: " + npc.UnitFlags;
-                row.Comment += " - UnitFlags2: " + npc.UnitFlags2;
-                 
-                rows.Add(row);
-            }
-
-            return new SQLInsert(tableName, rows, ignore: true, withDelete: false).Build();*/
-            return string.Empty;
-        }
-
-        //public static string CreatureXP(Dictionary<Guid, Unit> units)
-        //{
-        //
-        //}
-
         [BuilderMethod]
         public static string Loot()
         {
