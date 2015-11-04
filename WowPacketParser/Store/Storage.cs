@@ -106,9 +106,6 @@ namespace WowPacketParser.Store
         // Gossips (MenuId, TextId)
         public static readonly StoreDictionary<Tuple<uint, uint>, Gossip> Gossips = new StoreDictionary<Tuple<uint, uint>, Gossip>(new List<SQLOutput> { SQLOutput.gossip_menu_option });
 
-        // Loot (ItemId, LootType)
-        public static readonly StoreDictionary<Tuple<uint, ObjectType>, Loot> Loots = new StoreDictionary<Tuple<uint, ObjectType>, Loot>(new List<SQLOutput> { SQLOutput.LootTemplate });
-
         // Quest POI (QuestId, Id)
         public static readonly StoreDictionary<Tuple<uint, uint>, QuestPOI> QuestPOIs = new StoreDictionary<Tuple<uint, uint>, QuestPOI>(new List<SQLOutput> { SQLOutput.quest_poi_points });
         public static readonly StoreDictionary<Tuple<int, int>, QuestPOIWoD> QuestPOIWoDs = new StoreDictionary<Tuple<int, int>, QuestPOIWoD>(new List<SQLOutput> { SQLOutput.quest_poi_points }); // WoD
@@ -182,8 +179,6 @@ namespace WowPacketParser.Store
             StartPositions.Clear();
 
             Gossips.Clear();
-
-            Loots.Clear();
 
             QuestPOIs.Clear();
 

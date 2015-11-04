@@ -203,46 +203,6 @@ namespace WowPacketParser.SQL.Builders
         }
 
         [BuilderMethod]
-        public static string Loot()
-        {
-            /*if (Storage.Loots.IsEmpty())
-                return String.Empty;
-
-            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.LootTemplate))
-                return string.Empty;
-
-            // Not TDB structure
-            const string tableName = "LootTemplate";
-
-            var rows = new List<SQLInsertRow>();
-            foreach (var loot in Storage.Loots)
-            {
-                var comment = new SQLInsertRow
-                {
-                    HeaderComment =
-                        StoreGetters.GetName(Utilities.ObjectTypeToStore(Storage.Loots.Keys().First().Item2),
-                            (int) loot.Key.Item1, false) +
-                        " (" + loot.Value.Item1.Gold + " gold)"
-                };
-                rows.Add(comment);
-                foreach (var lootItem in loot.Value.Item1.LootItems)
-                {
-                    var row = new SQLInsertRow();
-                    row.AddValue("Id", loot.Key.Item1);
-                    row.AddValue("Type", loot.Key.Item2);
-                    row.AddValue("ItemId", lootItem.ItemId);
-                    row.AddValue("Count", lootItem.Count);
-                    row.Comment = StoreGetters.GetName(StoreNameType.Item, (int)lootItem.ItemId, false);
-
-                    rows.Add(row);
-                }
-            }
-
-            return new SQLInsert(tableName, rows, 2).Build();*/
-            return string.Empty;
-        }
-
-        [BuilderMethod]
         public static string Gossip()
         {
             // TODO: This should be rewritten
