@@ -85,9 +85,8 @@ namespace WowPacketParser.SQL.Builders
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_model_info))
                 return string.Empty;
 
-            // Build a dictionary with model data; model is the key
-            var models = new StoreDictionary<uint, ModelData>();
-            foreach (var npc in units.Select(unit => unit.Value))
+            var models = new DataBag<ModelData>();
+            foreach (Unit npc in units.Select(unit => unit.Value))
             {
                 if (Settings.AreaFilters.Length > 0)
                     if (!(npc.Area.ToString(CultureInfo.InvariantCulture).MatchesFilters(Settings.AreaFilters)))
@@ -103,24 +102,24 @@ namespace WowPacketParser.SQL.Builders
                 else
                     continue;
 
-                // Do not add duplicate models
-                if (models.ContainsKey(modelId))
+                ModelData model = new ModelData
+                {
+                    DisplayID = modelId
+                };
+
+                if (models.ContainsKey(model))
                     continue;
 
                 float scale = npc.Size.GetValueOrDefault(1.0f);
-                var model = new ModelData
-                {
-                    BoundingRadius = npc.BoundingRadius.GetValueOrDefault(0.306f) / scale,
-                    CombatReach = npc.CombatReach.GetValueOrDefault(1.5f) / scale,
-                    Gender = npc.Gender.GetValueOrDefault(Gender.Male)
-                };
+                model.BoundingRadius = npc.BoundingRadius.GetValueOrDefault(0.306f) / scale;
+                model.CombatReach = npc.CombatReach.GetValueOrDefault(1.5f) / scale;
+                model.Gender = npc.Gender.GetValueOrDefault(Gender.Male);
 
-                models.Add(modelId, model);
+                models.Add(model, null);
             }
 
-            var entries = models.Keys();
-            var modelsDb = SQLDatabase.GetDict<uint, ModelData>(entries, "DisplayID");
-            return SQLUtil.CompareDicts(models, modelsDb, StoreNameType.None, "DisplayID");
+            var modelsDb = SQLDatabase.Get(models);
+            return SQLUtil.Compare(models, modelsDb, StoreNameType.None);
         }
 
         [BuilderMethod]
@@ -161,49 +160,46 @@ namespace WowPacketParser.SQL.Builders
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_equip_template))
                 return string.Empty;
 
-            var equips = new StoreDictionary<uint, CreatureEquipment>();
-            foreach (var unit in units)
+            var equips = new DataBag<CreatureEquipment>();
+            foreach (KeyValuePair<WowGuid, Unit> npc in units)
             {
-                var equip = new CreatureEquipment();
-                var npc = unit.Value;
-                var entry = unit.Key.GetEntry();
-
                 if (Settings.AreaFilters.Length > 0)
-                    if (!(npc.Area.ToString(CultureInfo.InvariantCulture).MatchesFilters(Settings.AreaFilters)))
+                    if (!(npc.Value.Area.ToString(CultureInfo.InvariantCulture).MatchesFilters(Settings.AreaFilters)))
                         continue;
 
                 if (Settings.MapFilters.Length > 0)
-                    if (!(npc.Map.ToString(CultureInfo.InvariantCulture).MatchesFilters(Settings.MapFilters)))
+                    if (!(npc.Value.Map.ToString(CultureInfo.InvariantCulture).MatchesFilters(Settings.MapFilters)))
                         continue;
 
-                if (npc.Equipment == null || npc.Equipment.Length != 3)
+                if (npc.Value.Equipment == null || npc.Value.Equipment.Length != 3)
                     continue;
 
-                if (npc.Equipment[0] == 0 && npc.Equipment[1] == 0 && npc.Equipment[2] == 0)
+                if (npc.Value.Equipment[0] == 0 && npc.Value.Equipment[1] == 0 && npc.Value.Equipment[2] == 0)
                     continue;
 
-                if (equips.ContainsKey(entry))
+                CreatureEquipment equip = new CreatureEquipment
                 {
-                    var existingEquip = equips[entry].Item1;
+                    CreatureID = npc.Key.GetEntry(),
+                    ItemID1 = npc.Value.Equipment[0],
+                    ItemID2 = npc.Value.Equipment[1],
+                    ItemID3 = npc.Value.Equipment[2]
+                };
 
-                    if (existingEquip.ItemEntry1 != npc.Equipment[0] ||
-                          existingEquip.ItemEntry2 != npc.Equipment[1] ||
-                          existingEquip.ItemEntry3 != npc.Equipment[2])
-                        equips.Remove(entry); // no conflicts
-
+                if (equips.Contains(equip))
                     continue;
+
+                for (uint i = 1;; i++)
+                {
+                    equip.ID = i;
+                    if (!equips.ContainsKey(equip))
+                        break;
                 }
 
-                equip.ItemEntry1 = npc.Equipment[0];
-                equip.ItemEntry2 = npc.Equipment[1];
-                equip.ItemEntry3 = npc.Equipment[2];
-
-                equips.Add(entry, equip);
+                equips.Add(equip, null);
             }
 
-            var entries = equips.Keys();
-            var equipsDb = SQLDatabase.GetDict<uint, CreatureEquipment>(entries);
-            return SQLUtil.CompareDicts(equips, equipsDb, StoreNameType.Unit);
+            var equipsDb = SQLDatabase.Get(equips);
+            return SQLUtil.Compare(equips, equipsDb, StoreNameType.Unit);
         }
 
         [BuilderMethod(Units = true)]

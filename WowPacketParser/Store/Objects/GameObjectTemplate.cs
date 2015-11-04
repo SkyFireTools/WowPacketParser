@@ -28,15 +28,15 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("size")]
         public float Size;
 
-        [DBFieldName("questItem", ClientVersionBuild.Zero, ClientVersionBuild.V6_0_2_19033, 6)]
+        [DBFieldName("questItem", TargetedDatabase.Zero, TargetedDatabase.WarlordsOfDraenor, 6)]
         public uint[] QuestItems;
 
-        [DBFieldName("Data", ClientVersionBuild.Zero, ClientVersionBuild.V4_0_1_13164, 24, true)]
-        [DBFieldName("Data", ClientVersionBuild.V4_0_1_13164, ClientVersionBuild.V6_0_3_19103, 32, true)]
-        [DBFieldName("Data", ClientVersionBuild.V6_0_3_19103, 33, true)]
+        [DBFieldName("Data", TargetedDatabase.Zero, TargetedDatabase.Cataclysm, 24, true)]
+        [DBFieldName("Data", TargetedDatabase.Cataclysm, TargetedDatabase.WarlordsOfDraenor, 32, true)]
+        [DBFieldName("Data", TargetedDatabase.WarlordsOfDraenor, 33, true)]
         public int[] Data;
 
-        [DBFieldName("unkInt32", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("unkInt32", TargetedDatabase.Cataclysm)]
         public int UnknownInt;
 
         [DBFieldName("VerifiedBuild")]

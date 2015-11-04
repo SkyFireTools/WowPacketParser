@@ -62,7 +62,7 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("Flags")]
         public QuestFlags Flags;
 
-        [DBFieldName("MinimapTargetMark", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("MinimapTargetMark", TargetedDatabase.Cataclysm)]
         public uint MinimapTargetMark;
 
         [DBFieldName("RewardTitleId")]
@@ -77,19 +77,19 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("RewardArenaPoints")]
         public uint RewardArenaPoints;
 
-        [DBFieldName("RewardSkillId", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("RewardSkillId", TargetedDatabase.Cataclysm)]
         public uint RewardSkillId;
 
-        [DBFieldName("RewardSkillPoints", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("RewardSkillPoints", TargetedDatabase.Cataclysm)]
         public uint RewardSkillPoints;
 
-        [DBFieldName("RewardReputationMask", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("RewardReputationMask", TargetedDatabase.Cataclysm)]
         public uint RewardReputationMask;
 
-        [DBFieldName("QuestGiverPortrait", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("QuestGiverPortrait", TargetedDatabase.Cataclysm)]
         public uint QuestGiverPortrait;
 
-        [DBFieldName("QuestTurnInPortrait", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("QuestTurnInPortrait", TargetedDatabase.Cataclysm)]
         public uint QuestTurnInPortrait;
 
         [DBFieldName("RewardItemId", 4)]
@@ -158,40 +158,40 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("RequiredItemCount", 6)]
         public uint[] RequiredItemCount;
 
-        [DBFieldName("RequiredSpell", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("RequiredSpell", TargetedDatabase.Cataclysm)]
         public uint RequiredSpell;
 
         [DBFieldName("ObjectiveText", 4)]
         public string[] ObjectiveText;
 
-        [DBFieldName("RewardCurrencyId", ClientVersionBuild.V4_0_1_13164, 4)]
+        [DBFieldName("RewardCurrencyId", TargetedDatabase.Cataclysm, 4)]
         public uint[] RewardCurrencyId;
 
-        [DBFieldName("RewardCurrencyCount", ClientVersionBuild.V4_0_1_13164, 4)]
+        [DBFieldName("RewardCurrencyCount", TargetedDatabase.Cataclysm, 4)]
         public uint[] RewardCurrencyCount;
 
-        [DBFieldName("RequiredCurrencyId", ClientVersionBuild.V4_0_1_13164, 4)]
+        [DBFieldName("RequiredCurrencyId", TargetedDatabase.Cataclysm, 4)]
         public uint[] RequiredCurrencyId;
 
-        [DBFieldName("RequiredCurrencyCount", ClientVersionBuild.V4_0_1_13164, 4)]
+        [DBFieldName("RequiredCurrencyCount", TargetedDatabase.Cataclysm, 4)]
         public uint[] RequiredCurrencyCount;
 
-        [DBFieldName("QuestGiverTextWindow", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("QuestGiverTextWindow", TargetedDatabase.Cataclysm)]
         public string QuestGiverTextWindow;
 
-        [DBFieldName("QuestGiverTargetName", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("QuestGiverTargetName", TargetedDatabase.Cataclysm)]
         public string QuestGiverTargetName;
 
-        [DBFieldName("QuestTurnTextWindow", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("QuestTurnTextWindow", TargetedDatabase.Cataclysm)]
         public string QuestTurnTextWindow;
 
-        [DBFieldName("QuestTurnTargetName", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("QuestTurnTargetName", TargetedDatabase.Cataclysm)]
         public string QuestTurnTargetName;
 
-        [DBFieldName("SoundAccept", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("SoundAccept", TargetedDatabase.Cataclysm)]
         public uint SoundAccept;
 
-        [DBFieldName("SoundTurnIn", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("SoundTurnIn", TargetedDatabase.Cataclysm)]
         public uint SoundTurnIn;
 
         [DBFieldName("VerifiedBuild")]

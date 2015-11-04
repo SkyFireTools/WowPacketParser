@@ -10,7 +10,7 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("name")]
         public string Name;
 
-        [DBFieldName("femaleName", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("femaleName", TargetedDatabase.Cataclysm)]
         public string FemaleName;
 
         [DBFieldName("subname")]
@@ -22,7 +22,7 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("type_flags")]
         public CreatureTypeFlag TypeFlags;
 
-        [DBFieldName("type_flags2", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("type_flags2", TargetedDatabase.Cataclysm)]
         public uint TypeFlags2;
 
         [DBFieldName("type")]
@@ -37,7 +37,7 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("KillCredit", 2)]
         public uint[] KillCredits;
 
-        [DBFieldName("UnkInt", ClientVersionBuild.Zero, ClientVersionBuild.V3_1_0_9767)]
+        [DBFieldName("UnkInt", TargetedDatabase.Zero, TargetedDatabase.WrathOfTheLichKing)]
         public int UnkInt;
 
         [DBFieldName("PetSpellDataId")]
@@ -61,7 +61,7 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("movementId")]
         public uint MovementId;
 
-        [DBFieldName("exp_unk", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("exp_unk", TargetedDatabase.Cataclysm)]
         public ClientType Expansion;
 
         [DBFieldName("VerifiedBuild")]

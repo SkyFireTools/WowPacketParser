@@ -154,6 +154,9 @@ namespace WowPacketParser.SQL
             //fields.RemoveAll(field => field.Item2.Name == null);
             foreach (var field in Utilities.GetFieldsAndAttributes<T, DBFieldNameAttribute>())
             {
+                if (!field.Value.First().IsVisibleInVersion())
+                    continue;
+
                 string fieldName = field.Value.First().ToString();
                 fields.Add(new Tuple<string, FieldInfo, List<DBFieldNameAttribute>>(fieldName, field.Key, field.Value));
             }

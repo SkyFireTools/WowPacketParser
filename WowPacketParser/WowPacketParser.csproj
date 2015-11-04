@@ -221,6 +221,7 @@
     <Compile Include="Enums\RaidSummonFail.cs" />
     <Compile Include="Enums\StandState.cs" />
     <Compile Include="Enums\TalentErrors.cs" />
+    <Compile Include="Enums\TargetedDatabase.cs" />
     <Compile Include="Enums\TargetIcon.cs" />
     <Compile Include="Enums\InstanceResetWarningType.cs" />
     <Compile Include="Enums\InstanceStatus.cs" />

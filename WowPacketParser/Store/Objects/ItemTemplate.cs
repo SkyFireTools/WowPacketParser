@@ -31,10 +31,10 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("FlagsExtra")]
         public ItemFlagExtra Flags2;
 
-        [DBFieldName("Unk430_1", ClientVersionBuild.V4_3_0_15005)]
+        [DBFieldName("Unk430_1", TargetedDatabase.Cataclysm)]
         public float Unk430_1;
 
-        [DBFieldName("Unk430_2", ClientVersionBuild.V4_3_0_15005)]
+        [DBFieldName("Unk430_2", TargetedDatabase.Cataclysm)]
         public float Unk430_2;
 
         //[DBFieldName("Flags 3", ClientVersionBuild.V5_3_0_16981)] Added in soon
@@ -94,7 +94,7 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("ContainerSlots")]
         public uint ContainerSlots;
 
-        [DBFieldName("StatsCount", ClientVersionBuild.Zero, ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("StatsCount", TargetedDatabase.Zero, TargetedDatabase.Cataclysm)]
         public uint StatsCount;
 
         [DBFieldName("stat_type", 10)]
@@ -103,37 +103,37 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("stat_value", 10)]
         public int[] StatValues;
 
-        [DBFieldName("scaling_value", ClientVersionBuild.V4_0_1_13164, 10)]
+        [DBFieldName("scaling_value", TargetedDatabase.Cataclysm, 10)]
         public int[] ScalingValue;
 
-        [DBFieldName("socket_cost_rate", ClientVersionBuild.V4_0_1_13164, 10)]
+        [DBFieldName("socket_cost_rate", TargetedDatabase.Cataclysm, 10)]
         public int[] SocketCostRate;
 
         [DBFieldName("ScalingStatDistribution")]
         public int ScalingStatDistribution;
 
-        [DBFieldName("ScalingStatValue", ClientVersionBuild.Zero, ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("ScalingStatValue", TargetedDatabase.Zero, TargetedDatabase.Cataclysm)]
         public uint ScalingStatValue;
 
-        [DBFieldName("dmg_min", ClientVersionBuild.Zero, ClientVersionBuild.V4_0_1_13164, 2)]
+        [DBFieldName("dmg_min", TargetedDatabase.Zero, TargetedDatabase.Cataclysm, 2)]
         public float[] DamageMins;
 
-        [DBFieldName("dmg_max", ClientVersionBuild.Zero, ClientVersionBuild.V4_0_1_13164, 2)]
+        [DBFieldName("dmg_max", TargetedDatabase.Zero, TargetedDatabase.Cataclysm, 2)]
         public float[] DamageMaxs;
 
-        [DBFieldName("dmg_type", ClientVersionBuild.Zero, ClientVersionBuild.V4_0_1_13164, 2)]
+        [DBFieldName("dmg_type", TargetedDatabase.Zero, TargetedDatabase.Cataclysm, 2)]
         public DamageType[] DamageTypes;
 
         //[DBFieldName(ClientVersionBuild.Zero, ClientVersionBuild.V4_0_1_13164, "armor", "holy_res", "fire_res", "nature_res", "frost_res", "shadow_res", "arcane_res")]
         public DamageType[] Resistances; // armor is included
 
-        [DBFieldName("DamageType", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("DamageType", TargetedDatabase.Cataclysm)]
         public DamageType DamageType;
 
         [DBFieldName("delay")]
         public uint Delay;
 
-        [DBFieldName("ammo_type", ClientVersionBuild.Zero, ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("ammo_type", TargetedDatabase.Zero, TargetedDatabase.Cataclysm)]
         public AmmoType AmmoType;
 
         [DBFieldName("RangedModRange")]
@@ -190,7 +190,7 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("RandomSuffix")]
         public uint RandomSuffix;
 
-        [DBFieldName("block", ClientVersionBuild.Zero, ClientVersionBuild.V4_1_0_13914)]
+        [DBFieldName("block", TargetedDatabase.Zero, TargetedDatabase.Cataclysm)]
         public uint Block;
 
         [DBFieldName("itemset")]
@@ -223,7 +223,7 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("GemProperties")]
         public int GemProperties;
 
-        [DBFieldName("RequiredDisenchantSkill", ClientVersionBuild.Zero, ClientVersionBuild.V4_1_0_13914)]
+        [DBFieldName("RequiredDisenchantSkill", TargetedDatabase.Zero, TargetedDatabase.Cataclysm)]
         public int RequiredDisenchantSkill;
 
         [DBFieldName("ArmorDamageModifier")]
@@ -238,16 +238,16 @@ namespace WowPacketParser.Store.Objects
         [DBFieldName("HolidayId")]
         public Holiday HolidayId;
 
-        [DBFieldName("StatScalingFactor", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("StatScalingFactor", TargetedDatabase.Cataclysm)]
         public float StatScalingFactor;
 
-        [DBFieldName("CurrencySubstitutionId", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("CurrencySubstitutionId", TargetedDatabase.Cataclysm)]
         public uint CurrencySubstitutionId;
 
-        [DBFieldName("CurrencySubstitutionCount", ClientVersionBuild.V4_0_1_13164)]
+        [DBFieldName("CurrencySubstitutionCount", TargetedDatabase.Cataclysm)]
         public uint CurrencySubstitutionCount;
 
-        [DBFieldName("ItemNameDescriptionID", ClientVersionBuild.V6_0_2_19033)]
+        [DBFieldName("ItemNameDescriptionID", TargetedDatabase.WarlordsOfDraenor)]
         public uint ItemNameDescriptionId;
 
         [DBFieldName("VerifiedBuild")]

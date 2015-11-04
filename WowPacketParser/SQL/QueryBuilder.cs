@@ -35,7 +35,7 @@ namespace WowPacketParser.SQL
                 if (_conditions.Count == 1)
                 {
                     whereClause.Append(" = ");
-                    whereClause.Append(field.Item2.GetValue(_conditions.First()));
+                    whereClause.Append(field.Item2.GetValue(_conditions.First().Data));
                 }
                 else
                 {
