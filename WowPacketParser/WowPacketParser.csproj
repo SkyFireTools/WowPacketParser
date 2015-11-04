@@ -500,6 +500,7 @@
     <Compile Include="Store\Objects\Creature.cs" />
     <Compile Include="Store\Objects\CreatureDifficulty.cs" />
     <Compile Include="Store\Objects\CreatureEquipment.cs" />
+    <Compile Include="Store\Objects\CreatureTemplateAddon.cs" />
     <Compile Include="Store\Objects\CreatureText.cs" />
     <Compile Include="Store\Objects\CurvePoint.cs" />
     <Compile Include="Store\Objects\DefenseMessage.cs" />

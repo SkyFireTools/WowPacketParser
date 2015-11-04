@@ -15,20 +15,18 @@ namespace WowPacketParser.SQL.Builders
     public static class UnitMisc
     {
         [BuilderMethod(Units = true)]
-        public static string Addon(Dictionary<WowGuid, Unit> units)
+        public static string CreatureTemplateAddon(Dictionary<WowGuid, Unit> units)
         {
-            /*if (units.Count == 0)
+            if (units.Count == 0)
                 return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_template_addon))
                 return string.Empty;
 
-            const string tableName = "creature_template_addon";
-
-            var rows = new List<SQLInsertRow>();
+            var addons = new DataBag<CreatureTemplateAddon>();
             foreach (var unit in units)
             {
-                var npc = unit.Value;
+                Unit npc = unit.Value;
 
                 if (Settings.AreaFilters.Length > 0)
                     if (!(npc.Area.ToString(CultureInfo.InvariantCulture).MatchesFilters(Settings.AreaFilters)))
@@ -38,14 +36,8 @@ namespace WowPacketParser.SQL.Builders
                     if (!(npc.Map.ToString(CultureInfo.InvariantCulture).MatchesFilters(Settings.MapFilters)))
                         continue;
 
-                var row = new SQLInsertRow();
-                row.AddValue("entry", unit.Key.GetEntry());
-                row.AddValue("mount", npc.Mount);
-                row.AddValue("bytes1", npc.Bytes1, true);
-                row.AddValue("bytes2", npc.Bytes2, true);
-
-                var auras = string.Empty;
-                var commentAuras = string.Empty;
+                string auras = string.Empty;
+                string commentAuras = string.Empty;
                 if (npc.Auras != null && npc.Auras.Count() != 0)
                 {
                     foreach (var aura in npc.Auras)
@@ -63,17 +55,32 @@ namespace WowPacketParser.SQL.Builders
                     auras = auras.TrimEnd(' ');
                     commentAuras = commentAuras.TrimEnd(',', ' ');
                 }
-                row.AddValue("auras", auras);
 
-                row.Comment += StoreGetters.GetName(StoreNameType.Unit, (int)unit.Key.GetEntry(), false);
-                if (!String.IsNullOrWhiteSpace(auras))
-                    row.Comment += " - " + commentAuras;
+                CreatureTemplateAddon addon = new CreatureTemplateAddon
+                {
+                    Entry = unit.Key.GetEntry(),
+                    MountID = npc.Mount.GetValueOrDefault(),
+                    Bytes1 = npc.Bytes1.GetValueOrDefault(),
+                    Bytes2 = npc.Bytes2.GetValueOrDefault(),
+                    Auras = auras,
+                    CommentAuras = commentAuras
+                };
 
-                rows.Add(row);
+                if (addons.ContainsKey(addon))
+                    continue;
+
+                addons.Add(addon, null);
             }
 
-            return new SQLInsert(tableName, rows).Build();*/
-            return string.Empty;
+            var addonsDb = SQLDatabase.Get(addons);
+            return SQLUtil.Compare(addons, addonsDb,
+                addon =>
+                {
+                    string comment = StoreGetters.GetName(StoreNameType.Unit, (int)addon.Entry.GetValueOrDefault());
+                    if (!string.IsNullOrEmpty(addon.CommentAuras))
+                        comment += " - " + addon.CommentAuras;
+                    return comment;
+                });
         }
 
         [BuilderMethod(Units = true)]
