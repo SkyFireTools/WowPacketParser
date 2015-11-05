@@ -258,18 +258,21 @@ namespace WowPacketParser.SQL.Builders
         }
 
         [BuilderMethod]
-        public static string Item()
+        public static string ItemTemplate()
         {
+            if (Settings.TargetedDatabase == TargetedDatabase.WarlordsOfDraenor)
+                return string.Empty;
+
             if (Storage.ItemTemplates.IsEmpty())
-                return String.Empty;
+                return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.item_template))
                 return string.Empty;
 
-            var entries = Storage.ItemTemplates.Keys();
-            var templatesDb = SQLDatabase.GetDict<uint, ItemTemplate>(entries);
+            var entries = Storage.ItemTemplates;
+            var templatesDb = SQLDatabase.Get(entries);
 
-            return SQLUtil.CompareDicts(Storage.ItemTemplates, templatesDb, StoreNameType.Item);
+            return SQLUtil.Compare(Storage.ItemTemplates, templatesDb, StoreNameType.Item);
         }
 
         [BuilderMethod]

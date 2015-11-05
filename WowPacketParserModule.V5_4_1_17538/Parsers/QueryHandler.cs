@@ -255,8 +255,9 @@ namespace WowPacketParserModule.V5_4_1_17538.Parsers
                 }
                 case DB2Hash.Item:
                 {
-                    var item = Storage.ItemTemplates.ContainsKey(entry)
-                        ? Storage.ItemTemplates[entry].Item1
+                    ItemTemplate key = new ItemTemplate {Entry = entry};
+                    ItemTemplate item = Storage.ItemTemplates.ContainsKey(key)
+                        ? Storage.ItemTemplates[key].Item1
                         : new ItemTemplate();
 
                     db2File.ReadUInt32<ItemId>("Item Entry");
@@ -264,11 +265,11 @@ namespace WowPacketParserModule.V5_4_1_17538.Parsers
                     item.SubClass = db2File.ReadUInt32("Sub Class");
                     item.SoundOverrideSubclass = db2File.ReadInt32("Sound Override Subclass");
                     item.Material = db2File.ReadInt32E<Material>("Material");
-                    item.DisplayId = db2File.ReadUInt32("Display ID");
+                    item.DisplayID = db2File.ReadUInt32("Display ID");
                     item.InventoryType = db2File.ReadUInt32E<InventoryType>("Inventory Type");
                     item.SheathType = db2File.ReadInt32E<SheathType>("Sheath Type");
 
-                    Storage.ItemTemplates.Add(entry, item, packet.TimeSpan);
+                    Storage.ItemTemplates.Add(item, packet.TimeSpan);
                     packet.AddSniffData(StoreNameType.Item, (int) entry, "DB_REPLY");
                     break;
                 }
@@ -301,15 +302,16 @@ namespace WowPacketParserModule.V5_4_1_17538.Parsers
                 }
                 case DB2Hash.Item_sparse:
                 {
-                    var item = Storage.ItemTemplates.ContainsKey(entry)
-                        ? Storage.ItemTemplates[entry].Item1
+                    ItemTemplate key = new ItemTemplate {Entry = entry};
+                    ItemTemplate item = Storage.ItemTemplates.ContainsKey(key)
+                        ? Storage.ItemTemplates[key].Item1
                         : new ItemTemplate();
 
                     db2File.ReadUInt32<ItemId>("Item Sparse Entry");
                     item.Quality = db2File.ReadInt32E<ItemQuality>("Quality");
-                    item.Flags1 = db2File.ReadUInt32E<ItemProtoFlags>("Flags 1");
-                    item.Flags2 = db2File.ReadInt32E<ItemFlagExtra>("Flags 2");
-                    item.Flags3 = db2File.ReadUInt32("Flags 3");
+                    item.Flags = db2File.ReadUInt32E<ItemProtoFlags>("Flags 1");
+                    item.FlagsExtra = db2File.ReadInt32E<ItemFlagExtra>("Flags 2");
+                    db2File.ReadUInt32("Flags 3");
                     item.Unk430_1 = db2File.ReadSingle("Unk430_1");
                     item.Unk430_2 = db2File.ReadSingle("Unk430_2");
                     item.BuyCount = db2File.ReadUInt32("Buy count");
@@ -331,23 +333,23 @@ namespace WowPacketParserModule.V5_4_1_17538.Parsers
                     item.MaxStackSize = db2File.ReadInt32("Max Stack Size");
                     item.ContainerSlots = db2File.ReadUInt32("Container Slots");
 
-                    item.StatTypes = new ItemModType[10];
-                    for (var i = 0; i < 10; i++)
+                    item.StatTypes = new ItemModType?[10];
+                    for (int i = 0; i < 10; i++)
                     {
-                        var statType = db2File.ReadInt32E<ItemModType>("Stat Type", i);
+                        ItemModType statType = db2File.ReadInt32E<ItemModType>("Stat Type", i);
                         item.StatTypes[i] = statType == ItemModType.None ? ItemModType.Mana : statType; // TDB
                     }
 
-                    item.StatValues = new int[10];
-                    for (var i = 0; i < 10; i++)
+                    item.StatValues = new int?[10];
+                    for (int i = 0; i < 10; i++)
                         item.StatValues[i] = db2File.ReadInt32("Stat Value", i);
-
-                    item.ScalingValue = new int[10];
-                    for (var i = 0; i < 10; i++)
+                    
+                    item.ScalingValue = new int?[10];
+                    for (int i = 0; i < 10; i++)
                         item.ScalingValue[i] = db2File.ReadInt32("Scaling Value", i);
 
-                    item.SocketCostRate = new int[10];
-                    for (var i = 0; i < 10; i++)
+                    item.SocketCostRate = new int?[10];
+                    for (int i = 0; i < 10; i++)
                         item.SocketCostRate[i] = db2File.ReadInt32("Socket Cost Rate", i);
 
                     item.ScalingStatDistribution = db2File.ReadInt32("Scaling Stat Distribution");
@@ -355,28 +357,28 @@ namespace WowPacketParserModule.V5_4_1_17538.Parsers
                     item.Delay = db2File.ReadUInt32("Delay");
                     item.RangedMod = db2File.ReadSingle("Ranged Mod");
 
-                    item.TriggeredSpellIds = new int[5];
-                    for (var i = 0; i < 5; i++)
+                    item.TriggeredSpellIds = new int?[5];
+                    for (int i = 0; i < 5; i++)
                         item.TriggeredSpellIds[i] = db2File.ReadInt32<SpellId>("Triggered Spell ID", i);
 
-                    item.TriggeredSpellTypes = new ItemSpellTriggerType[5];
-                    for (var i = 0; i < 5; i++)
+                    item.TriggeredSpellTypes = new ItemSpellTriggerType?[5];
+                    for (int i = 0; i < 5; i++)
                         item.TriggeredSpellTypes[i] = db2File.ReadInt32E<ItemSpellTriggerType>("Trigger Spell Type", i);
 
-                    item.TriggeredSpellCharges = new int[5];
-                    for (var i = 0; i < 5; i++)
+                    item.TriggeredSpellCharges = new int?[5];
+                    for (int i = 0; i < 5; i++)
                         item.TriggeredSpellCharges[i] = db2File.ReadInt32("Triggered Spell Charges", i);
 
-                    item.TriggeredSpellCooldowns = new int[5];
-                    for (var i = 0; i < 5; i++)
+                    item.TriggeredSpellCooldowns = new int?[5];
+                    for (int i = 0; i < 5; i++)
                         item.TriggeredSpellCooldowns[i] = db2File.ReadInt32("Triggered Spell Cooldown", i);
 
-                    item.TriggeredSpellCategories = new uint[5];
-                    for (var i = 0; i < 5; i++)
+                    item.TriggeredSpellCategories = new uint?[5];
+                    for (int i = 0; i < 5; i++)
                         item.TriggeredSpellCategories[i] = db2File.ReadUInt32("Triggered Spell Category", i);
 
-                    item.TriggeredSpellCategoryCooldowns = new int[5];
-                    for (var i = 0; i < 5; i++)
+                    item.TriggeredSpellCategoryCooldowns = new int?[5];
+                    for (int i = 0; i < 5; i++)
                         item.TriggeredSpellCategoryCooldowns[i] = db2File.ReadInt32(
                             "Triggered Spell Category Cooldown", i);
 
@@ -385,7 +387,7 @@ namespace WowPacketParserModule.V5_4_1_17538.Parsers
                     if (db2File.ReadUInt16() > 0)
                         item.Name = db2File.ReadCString("Name", 0);
 
-                    for (var i = 1; i < 4; ++i)
+                    for (int i = 1; i < 4; ++i)
                         if (db2File.ReadUInt16() > 0)
                             db2File.ReadCString("Name", i);
 
@@ -402,16 +404,16 @@ namespace WowPacketParserModule.V5_4_1_17538.Parsers
                     item.RandomPropery = db2File.ReadInt32("Random Property");
                     item.RandomSuffix = db2File.ReadUInt32("Random Suffix");
                     item.ItemSet = db2File.ReadUInt32("Item Set");
-                    item.AreaId = db2File.ReadUInt32<AreaId>("Area");
-                    item.MapId = db2File.ReadInt32<MapId>("Map ID");
+                    item.AreaID = db2File.ReadUInt32<AreaId>("Area");
+                    item.MapID = db2File.ReadInt32<MapId>("Map ID");
                     item.TotemCategory = db2File.ReadInt32E<TotemCategory>("Totem Category");
 
-                    item.ItemSocketColors = new ItemSocketColor[3];
-                    for (var i = 0; i < 3; i++)
+                    item.ItemSocketColors = new ItemSocketColor?[3];
+                    for (int i = 0; i < 3; i++)
                         item.ItemSocketColors[i] = db2File.ReadInt32E<ItemSocketColor>("Socket Color", i);
 
-                    item.SocketContent = new uint[3];
-                    for (var i = 0; i < 3; i++)
+                    item.SocketContent = new uint?[3];
+                    for (int i = 0; i < 3; i++)
                         item.SocketContent[i] = db2File.ReadUInt32("Socket Item", i);
 
                     item.SocketBonus = db2File.ReadInt32("Socket Bonus");
@@ -419,9 +421,9 @@ namespace WowPacketParserModule.V5_4_1_17538.Parsers
                     item.ArmorDamageModifier = db2File.ReadSingle("Armor Damage Modifier");
                     item.Duration = db2File.ReadUInt32("Duration");
                     item.ItemLimitCategory = db2File.ReadInt32("Limit Category");
-                    item.HolidayId = db2File.ReadInt32E<Holiday>("Holiday");
+                    item.HolidayID = db2File.ReadInt32E<Holiday>("Holiday");
                     item.StatScalingFactor = db2File.ReadSingle("Stat Scaling Factor");
-                    item.CurrencySubstitutionId = db2File.ReadUInt32("Currency Substitution Id");
+                    item.CurrencySubstitutionID = db2File.ReadUInt32("Currency Substitution Id");
                     item.CurrencySubstitutionCount = db2File.ReadUInt32("Currency Substitution Count");
 
                     Storage.ObjectNames.Add(entry, new ObjectName {ObjectType = ObjectType.Item, Name = item.Name},
