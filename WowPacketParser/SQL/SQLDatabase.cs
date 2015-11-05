@@ -380,7 +380,7 @@ namespace WowPacketParser.SQL
 
             var result = new RowList<T>();
 
-            using (var reader = SQLConnector.ExecuteQuery(new SQLSelect<T>(rowList, database).Build()))
+            using (MySqlDataReader reader = SQLConnector.ExecuteQuery(new SQLSelect<T>(rowList, database).Build()))
             {
                 if (reader == null)
                     return null;

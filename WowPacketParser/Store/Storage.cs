@@ -66,7 +66,7 @@ namespace WowPacketParser.Store
         public static readonly StoreDictionary<uint, Toy> Toys = new StoreDictionary<uint, Toy>(new List<HotfixSQLOutput> { HotfixSQLOutput.toy });
 
         // Templates
-        public static readonly StoreDictionary<uint, GameObjectTemplate> GameObjectTemplates = new StoreDictionary<uint, GameObjectTemplate>(new List<SQLOutput> { SQLOutput.gameobject_template });
+        public static readonly DataBag<GameObjectTemplate> GameObjectTemplates = new DataBag<GameObjectTemplate>(new List<SQLOutput> { SQLOutput.gameobject_template });
         public static readonly StoreDictionary<uint, ItemTemplate> ItemTemplates = new StoreDictionary<uint, ItemTemplate>(new List<SQLOutput> { SQLOutput.item_template });
         public static readonly StoreDictionary<uint, QuestTemplate> QuestTemplates = new StoreDictionary<uint, QuestTemplate>(new List<SQLOutput> { SQLOutput.quest_template });
         public static readonly StoreDictionary<uint, QuestTemplateWod> QuestTemplatesWod = new StoreDictionary<uint, QuestTemplateWod>(new List<SQLOutput> { SQLOutput.quest_template });

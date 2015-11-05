@@ -198,6 +198,6 @@ namespace WowPacketParser.Store.Objects
         public string ScriptName;
 
         [DBFieldName("VerifiedBuild")]
-        public int VerifiedBuild = ClientVersion.BuildInt;
+        public int? VerifiedBuild = ClientVersion.BuildInt;
     }
 }

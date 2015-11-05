@@ -244,18 +244,17 @@ namespace WowPacketParser.SQL.Builders
         }
 
         [BuilderMethod]
-        public static string GameObject()
+        public static string GameObjectTemplate()
         {
             if (Storage.GameObjectTemplates.IsEmpty())
-                return String.Empty;
+                return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.gameobject_template))
                 return string.Empty;
 
-            var entries = Storage.GameObjectTemplates.Keys();
-            var templatesDb = SQLDatabase.GetDict<uint, GameObjectTemplate>(entries);
+            var templatesDb = SQLDatabase.Get(Storage.GameObjectTemplates);
 
-            return SQLUtil.CompareDicts(Storage.GameObjectTemplates, templatesDb, StoreNameType.GameObject);
+            return SQLUtil.Compare(Storage.GameObjectTemplates, templatesDb, StoreNameType.GameObject);
         }
 
         [BuilderMethod]
