@@ -224,7 +224,7 @@ namespace WowPacketParser.SQL
             {
                 result.Append(SQLUtil.AddBackQuotes(Name + (StartAtZero ? i - 1 : i)));
                 if (i != Count)
-                    result.Append(",");
+                    result.Append(SQLUtil.CommaSeparator);
             }
             return result.ToString();
         }

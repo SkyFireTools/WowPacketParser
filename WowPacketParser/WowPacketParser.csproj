@@ -552,7 +552,6 @@
     <Compile Include="Store\Objects\SpellPower.cs" />
     <Compile Include="Store\Objects\SpellReagents.cs" />
     <Compile Include="Store\Objects\SpellRuneCost.cs" />
-    <Compile Include="Store\Objects\SpellsX.cs" />
     <Compile Include="Store\Objects\SpellTotems.cs" />
     <Compile Include="Store\Objects\StartAction.cs" />
     <Compile Include="Store\Objects\StartItem.cs" />
@@ -563,7 +562,7 @@
     <Compile Include="Store\Objects\TaxiPathNode.cs" />
     <Compile Include="Store\Objects\Toy.cs" />
     <Compile Include="Store\Objects\Unit.cs" />
-    <Compile Include="Store\Objects\UnitTemplate.cs" />
+    <Compile Include="Store\Objects\CreatureTemplate.cs" />
     <Compile Include="Store\Objects\UnitTemplateNonWDB.cs" />
     <Compile Include="Store\Objects\VehicleTemplateAccessory.cs" />
     <Compile Include="Store\Objects\WeatherUpdate.cs" />

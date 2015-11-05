@@ -71,7 +71,7 @@ namespace WowPacketParser.Store
         public static readonly StoreDictionary<uint, QuestTemplate> QuestTemplates = new StoreDictionary<uint, QuestTemplate>(new List<SQLOutput> { SQLOutput.quest_template });
         public static readonly StoreDictionary<uint, QuestTemplateWod> QuestTemplatesWod = new StoreDictionary<uint, QuestTemplateWod>(new List<SQLOutput> { SQLOutput.quest_template });
         public static readonly StoreDictionary<uint, QuestInfoObjective> QuestObjectives = new StoreDictionary<uint, QuestInfoObjective>(new List<SQLOutput> { SQLOutput.quest_template });
-        public static readonly StoreDictionary<uint, UnitTemplate> UnitTemplates = new StoreDictionary<uint, UnitTemplate>(new List<SQLOutput> { SQLOutput.creature_template });
+        public static readonly DataBag<CreatureTemplate> CreatureTemplates = new DataBag<CreatureTemplate>(new List<SQLOutput> { SQLOutput.creature_template });
 
         // Vendor & trainer
         public static readonly DataBag<NpcTrainer> NpcTrainers = new DataBag<NpcTrainer>(new List<SQLOutput> { SQLOutput.npc_trainer });
@@ -91,7 +91,7 @@ namespace WowPacketParser.Store
         // "Helper" stores, do not match a specific table
         public static readonly StoreMulti<WowGuid, EmoteType> Emotes = new StoreMulti<WowGuid, EmoteType>(new List<SQLOutput> { SQLOutput.creature_text });
         public static readonly StoreBag<uint> Sounds = new StoreBag<uint>(new List<SQLOutput> { SQLOutput.creature_text });
-        public static readonly StoreDictionary<uint, SpellsX> SpellsX = new StoreDictionary<uint, SpellsX>(new List<SQLOutput> { SQLOutput.creature_template }); // `creature_template`.`spellsX`
+        public static readonly StoreDictionary<uint, List<uint?>> SpellsX = new StoreDictionary<uint, List<uint?>>(new List<SQLOutput> { SQLOutput.creature_template }); // `creature_template`.`spellsX`
         public static readonly StoreDictionary<uint, QuestOffer> QuestOffers = new StoreDictionary<uint, QuestOffer>(new List<SQLOutput> { SQLOutput.quest_template });
         public static readonly StoreDictionary<uint, QuestReward> QuestRewards = new StoreDictionary<uint, QuestReward>(new List<SQLOutput> { SQLOutput.quest_template });
         public static readonly StoreDictionary<Tuple<uint, uint>, object> GossipSelects = new StoreDictionary<Tuple<uint, uint>, object>(new List<SQLOutput> { SQLOutput.points_of_interest, SQLOutput.gossip_menu, SQLOutput.gossip_menu_option });
@@ -154,7 +154,7 @@ namespace WowPacketParser.Store
             QuestTemplates.Clear();
             QuestTemplatesWod.Clear();
             QuestObjectives.Clear();
-            UnitTemplates.Clear();
+            CreatureTemplates.Clear();
 
             NpcTrainers.Clear();
             NpcVendors.Clear();

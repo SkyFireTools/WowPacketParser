@@ -390,7 +390,7 @@ namespace WowPacketParser.SQL
                 while (reader.Read())
                 {
                     T instance = (T)Activator.CreateInstance(typeof(T));
-                    var values = GetValues(reader, SQLUtil.GetFields<T>().Count);
+                    var values = GetValues(reader, SQLUtil.GetFields<T>().Select(f => f.Item3.First().Count).Sum());
 
                     int i = 0;
                     foreach (var field in fields)
@@ -401,28 +401,35 @@ namespace WowPacketParser.SQL
                             field.Item2.SetValue(instance, Enum.Parse(field.Item2.FieldType, values[i].ToString()));
                         else if (field.Item2.FieldType.BaseType == typeof(Array))
                         {
-                            Array arr = Array.CreateInstance(field.Item2.FieldType.GetElementType(), field.Item3.Count);
+                            Array arr = Array.CreateInstance(field.Item2.FieldType.GetElementType(), field.Item3.First().Count);
 
                             for (int j = 0; j < arr.Length; j++)
                             {
                                 Type elemType = arr.GetType().GetElementType();
-
-                                object val = elemType.IsEnum
-                                    ? Enum.Parse(elemType, values[i + j].ToString())
-                                    : Convert.ChangeType(values[i + j], elemType);
-
-                                arr.SetValue(val, j);
+                                
+                                if (elemType.IsEnum)
+                                    arr.SetValue(Enum.Parse(elemType, values[i + j].ToString()), j);
+                                else if (Nullable.GetUnderlyingType(elemType) != null) //is nullable
+                                    arr.SetValue(Convert.ChangeType(values[i + j], Nullable.GetUnderlyingType(elemType)), j);
+                                else
+                                    arr.SetValue(Convert.ChangeType(values[i + j], elemType), j); 
                             }
                             field.Item2.SetValue(instance, arr);
                         }
                         else if (field.Item2.FieldType == typeof(bool))
                             field.Item2.SetValue(instance, Convert.ToBoolean(values[i]));
                         else if (Nullable.GetUnderlyingType(field.Item2.FieldType) != null) // is nullable
-                            field.Item2.SetValue(instance, Convert.ChangeType(values[i], Nullable.GetUnderlyingType(field.Item2.FieldType)));
+                        {
+                            Type uType = Nullable.GetUnderlyingType(field.Item2.FieldType);
+                            field.Item2.SetValue(instance,
+                                uType.IsEnum
+                                    ? Enum.Parse(uType, values[i].ToString())
+                                    : Convert.ChangeType(values[i], Nullable.GetUnderlyingType(field.Item2.FieldType)));
+                        }
                         else
                             field.Item2.SetValue(instance, values[i]);
 
-                        i += field.Item3.Count;
+                        i += field.Item3.First().Count;
                     }
 
                     result.Add(instance);

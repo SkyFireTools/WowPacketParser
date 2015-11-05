@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using WowPacketParser.Enums;
 using WowPacketParser.Misc;
 using WowPacketParser.Store;
@@ -124,73 +125,122 @@ namespace WowPacketParser.SQL.Builders
             return string.Empty;
         }
 
-        [BuilderMethod]
-        public static string Npc()
+        [BuilderMethod(Units = true)]
+        public static string CreatureTemplate(Dictionary<WowGuid, Unit> units)
         {
-            if (Storage.UnitTemplates.IsEmpty())
-                return String.Empty;
-
-            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_template))
-                return String.Empty;
-
-            var entries = Storage.UnitTemplates.Keys();
-            var templatesDb = SQLDatabase.GetDict<uint, UnitTemplate>(entries);
-
-            return SQLUtil.CompareDicts(Storage.UnitTemplates, templatesDb, StoreNameType.Unit);
-        }
-
-        [BuilderMethod]
-        public static string NpcName()
-        {
-            /*var result = "";
-
-            if (Storage.UnitTemplates.IsEmpty())
-                return String.Empty;
+            if (Storage.CreatureTemplates.IsEmpty())
+                return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_template))
                 return string.Empty;
 
-            const string tableName = "creature_template";
+            var templatesDb = SQLDatabase.Get(Storage.CreatureTemplates);
 
-            if (SQLConnector.Enabled)
+            foreach (var cre in Storage.CreatureTemplates) // set some default values
             {
-                var rowsUpd = new List<SQLUpdateRow>();
+                Unit unit = units.FirstOrDefault(p => p.Key.GetEntry() == cre.Item1.Entry.GetValueOrDefault()).Value;
+                var levels = UnitMisc.GetLevels(units);
 
-                foreach (var npcName in Storage.UnitTemplates)
+                if (unit != null)
                 {
-                    var query = string.Format("SELECT name FROM {0}.creature_template WHERE entry={1};",
-                        Settings.TDBDatabase, npcName.Key);
+                    if (unit.GossipId == 0)
+                        cre.Item1.GossipMenuID = null;
+                    else
+                        cre.Item1.GossipMenuID = unit.GossipId;
 
-                    using (var reader = SQLConnector.ExecuteQuery(query))
+                    cre.Item1.MinLevel = levels[cre.Item1.Entry.GetValueOrDefault()].Item1;
+                    cre.Item1.MaxLevel = levels[cre.Item1.Entry.GetValueOrDefault()].Item2;
+
+                    HashSet<uint> playerFactions = new HashSet<uint> { 1, 2, 3, 4, 5, 6, 115, 116, 1610, 1629, 2203, 2204 };
+                    cre.Item1.Faction = unit.Faction.GetValueOrDefault(35);
+                    if (playerFactions.Contains(unit.Faction.GetValueOrDefault()))
+                        cre.Item1.Faction = 35;
+                    
+                    cre.Item1.NpcFlag = unit.NpcFlags.GetValueOrDefault(NPCFlags.None);
+                    cre.Item1.SpeedWalk = unit.Movement.WalkSpeed;
+                    cre.Item1.SpeedRun = unit.Movement.RunSpeed;
+                    
+                    cre.Item1.BaseAttackTime = unit.MeleeTime.GetValueOrDefault(2000);
+                    cre.Item1.RangeAttackTime = unit.RangedTime.GetValueOrDefault(2000);
+                    
+                    cre.Item1.UnitClass = (uint)unit.Class.GetValueOrDefault(Class.Warrior);
+
+                    cre.Item1.UnitFlags = unit.UnitFlags.GetValueOrDefault(UnitFlags.None);
+                    cre.Item1.UnitFlags &= ~UnitFlags.IsInCombat;
+                    cre.Item1.UnitFlags &= ~UnitFlags.PetIsAttackingTarget;
+                    cre.Item1.UnitFlags &= ~UnitFlags.PlayerControlled;
+                    cre.Item1.UnitFlags &= ~UnitFlags.Silenced;
+                    cre.Item1.UnitFlags &= ~UnitFlags.PossessedByPlayer;
+
+                    cre.Item1.UnitFlags2 = unit.UnitFlags2.GetValueOrDefault(UnitFlags2.None);
+
+                    if (Settings.TargetedDatabase != TargetedDatabase.WarlordsOfDraenor)
                     {
-                        if (reader.HasRows) // possible update
-                        {
-                            while (reader.Read())
-                            {
-                                var row = new SQLUpdateRow();
+                        cre.Item1.DynamicFlags = unit.DynamicFlags.GetValueOrDefault(UnitDynamicFlags.None);
+                        cre.Item1.DynamicFlags &= ~UnitDynamicFlags.Lootable;
+                        cre.Item1.DynamicFlags &= ~UnitDynamicFlags.Tapped;
+                        cre.Item1.DynamicFlags &= ~UnitDynamicFlags.TappedByPlayer;
+                        cre.Item1.DynamicFlags &= ~UnitDynamicFlags.TappedByAllThreatList;
+                    }
+                    else
+                    {
+                        cre.Item1.DynamicFlagsWod = unit.DynamicFlagsWod.GetValueOrDefault(UnitDynamicFlagsWOD.None);
+                        cre.Item1.DynamicFlagsWod &= ~UnitDynamicFlagsWOD.Lootable;
+                        cre.Item1.DynamicFlagsWod &= ~UnitDynamicFlagsWOD.Tapped;
+                        cre.Item1.DynamicFlagsWod &= ~UnitDynamicFlagsWOD.TappedByPlayer;
+                        cre.Item1.DynamicFlagsWod &= ~UnitDynamicFlagsWOD.TappedByAllThreatList;
+                    }
+                    cre.Item1.VehicleID = unit.Movement.VehicleId;
+                    cre.Item1.HoverHeight = unit.HoverHeight.GetValueOrDefault(1.0f);
 
-                                if (!Utilities.EqualValues(reader.GetValue(0), npcName.Value.Item1.Name))
-                                    row.AddValue("name", npcName.Value.Item1.Name);
+                    //TODO: set TrainerType from SMSG_TRAINER_LIST
+                    cre.Item1.TrainerType = 0;
 
-                                if (Utilities.EqualValues(reader.GetValue(0), npcName.Value.Item1.Name) && npcName.Value.Item1.FemaleName != null)
-                                    row.AddValue("femaleName", npcName.Value.Item1.FemaleName);
+                    cre.Item1.Resistances = new uint?[] {0, 0, 0, 0, 0, 0};
+                    for (int i = 0; i < unit.Resistances.Length - 1; i++)
+                        cre.Item1.Resistances[i] = unit.Resistances[i + 1];
+                }
 
-                                row.AddWhere("entry", npcName.Key);
+                // has trainer flag but doesn't have prof nor class trainer flag
+                if (cre.Item1.NpcFlag.GetValueOrDefault().HasFlag(NPCFlags.Trainer) &&
+                    (!cre.Item1.NpcFlag.GetValueOrDefault().HasFlag(NPCFlags.ProfessionTrainer) ||
+                     !cre.Item1.NpcFlag.GetValueOrDefault().HasFlag(NPCFlags.ClassTrainer)))
+                {
+                    string name = StoreGetters.GetName(StoreNameType.Unit, (int)cre.Item1.Entry.GetValueOrDefault(), false);
+                    int firstIndex = name.LastIndexOf('<');
+                    int lastIndex = name.LastIndexOf('>');
+                    if (firstIndex != -1 && lastIndex != -1)
+                    {
+                        string subname = name.Substring(firstIndex + 1, lastIndex - firstIndex - 1);
 
-                                row.Table = tableName;
-
-                                if (row.ValueCount != 0)
-                                    rowsUpd.Add(row);
-                            }
-                        }
+                        if (UnitMisc._professionTrainers.Contains(subname))
+                            cre.Item1.NpcFlag |= NPCFlags.ProfessionTrainer;
+                        else if (UnitMisc._classTrainers.Contains(subname))
+                            cre.Item1.NpcFlag |= NPCFlags.ClassTrainer;
                     }
                 }
 
-                result += new SQLUpdate(rowsUpd).Build();
+                cre.Item1.DifficultyEntries = new uint?[] {null, null, null};
+                cre.Item1.Scale = 1;
+                cre.Item1.DmgSchool = 0;
+                cre.Item1.BaseVariance = 1;
+                cre.Item1.RangeVariance = 1;
+                cre.Item1.Resistances = new uint?[] {null, null, null, null, null, null};
+                cre.Item1.Spells = new uint?[] {0, 0, 0, 0, 0, 0, 0, 0};
+                cre.Item1.HealthModifierExtra = 1;
+                cre.Item1.ManaModifierExtra = 1;
+                cre.Item1.ArmorModifier = 1;
             }
 
-            return result;*/
-            return string.Empty;
+            foreach (
+                var cre in
+                    Storage.CreatureTemplates.Where(
+                        cre => Storage.SpellsX.ContainsKey(cre.Item1.Entry.GetValueOrDefault())))
+            {
+                cre.Item1.Spells = Storage.SpellsX[cre.Item1.Entry.GetValueOrDefault()].Item1.ToArray();
+            }
+
+            return SQLUtil.Compare(Storage.CreatureTemplates, templatesDb, StoreNameType.Unit);
         }
 
         [BuilderMethod]

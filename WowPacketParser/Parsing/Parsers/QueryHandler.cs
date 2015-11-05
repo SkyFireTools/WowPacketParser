@@ -101,17 +101,21 @@ namespace WowPacketParser.Parsing.Parsers
             if (entry.Value)
                 return;
 
-            var creature = new UnitTemplate();
+            CreatureTemplate creature = new CreatureTemplate
+            {
+                Entry = (uint)entry.Key
+            };
+
 
             var name = new string[4];
-            for (var i = 0; i < name.Length; i++)
+            for (int i = 0; i < name.Length; i++)
                 name[i] = packet.ReadCString("Name", i);
             creature.Name = name[0];
 
             if (ClientVersion.AddedInVersion(ClientVersionBuild.V4_1_0_13914))
             {
                 var femaleName = new string[4];
-                for (var i = 0; i < femaleName.Length; i++)
+                for (int i = 0; i < femaleName.Length; i++)
                     femaleName[i] = packet.ReadCString("Female Name", i);
                 creature.FemaleName = femaleName[0];
             }
@@ -136,44 +140,45 @@ namespace WowPacketParser.Parsing.Parsers
 
             if (ClientVersion.AddedInVersion(ClientVersionBuild.V3_1_0_9767))
             {
-                creature.KillCredits = new uint[2];
-                for (var i = 0; i < 2; ++i)
+                creature.KillCredits = new uint?[2];
+                for (int i = 0; i < 2; ++i)
                     creature.KillCredits[i] = packet.ReadUInt32("Kill Credit", i);
             }
             else // Did they stop sending pet spell data after 3.1?
             {
-                creature.UnkInt = packet.ReadInt32("Unk Int");
-                creature.PetSpellData = packet.ReadUInt32("Pet Spell Data Id");
+                packet.ReadInt32("Unk Int");
+                creature.PetSpellDataID = packet.ReadUInt32("Pet Spell Data Id");
             }
 
-            creature.DisplayIds = new uint[4];
-            for (var i = 0; i < 4; i++)
-                creature.DisplayIds[i] = packet.ReadUInt32("Display ID", i);
+            creature.ModelIDs = new uint?[4];
+            for (int i = 0; i < 4; i++)
+                creature.ModelIDs[i] = packet.ReadUInt32("Model ID", i);
 
-            creature.Modifier1 = packet.ReadSingle("Modifier 1");
-            creature.Modifier2 = packet.ReadSingle("Modifier 2");
+            creature.HealthModifier = packet.ReadSingle("Modifier 1");
+            creature.ManaModifier = packet.ReadSingle("Modifier 2");
 
             creature.RacialLeader = packet.ReadBool("Racial Leader");
 
-            var qItemCount = ClientVersion.AddedInVersion(ClientVersionBuild.V3_2_0_10192) ? 6 : 4;
-            creature.QuestItems = new uint[qItemCount];
+            int qItemCount = ClientVersion.AddedInVersion(ClientVersionBuild.V3_2_0_10192) ? 6 : 4;
+            //TODO: Move to creature_questitem
+            //creature.QuestItems = new uint[qItemCount];
 
             if (ClientVersion.AddedInVersion(ClientVersionBuild.V3_1_0_9767))
             {
-                for (var i = 0; i < qItemCount; i++)
-                    creature.QuestItems[i] = (uint)packet.ReadInt32<ItemId>("Quest Item", i);
+                for (int i = 0; i < qItemCount; i++)
+                    /*creature.QuestItems[i] = (uint)*/packet.ReadInt32<ItemId>("Quest Item", i);
 
-                creature.MovementId = packet.ReadUInt32("Movement ID");
+                creature.MovementID = packet.ReadUInt32("Movement ID");
             }
 
             if (ClientVersion.AddedInVersion(ClientVersionBuild.V4_0_1_13164))
-                creature.Expansion = packet.ReadUInt32E<ClientType>("Expansion");
+                creature.ExpUnk = packet.ReadUInt32E<ClientType>("Expansion");
 
             packet.AddSniffData(StoreNameType.Unit, entry.Key, "QUERY_RESPONSE");
 
-            Storage.UnitTemplates.Add((uint)entry.Key, creature, packet.TimeSpan);
+            Storage.CreatureTemplates.Add(creature, packet.TimeSpan);
 
-            var objectName = new ObjectName
+            ObjectName objectName = new ObjectName
             {
                 ObjectType = ObjectType.Unit,
                 Name = creature.Name

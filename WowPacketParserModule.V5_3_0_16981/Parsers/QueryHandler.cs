@@ -19,31 +19,34 @@ namespace WowPacketParserModule.V5_3_0_16981.Parsers
         public static void HandleCreatureQueryResponse(Packet packet)
         {
             var entry = packet.ReadEntry("Entry");
-            var hasData = packet.ReadBit();
+            Bit hasData = packet.ReadBit();
             if (!hasData)
                 return; // nothing to do
 
-            var creature = new UnitTemplate();
+            CreatureTemplate creature = new CreatureTemplate
+            {
+                Entry = (uint)entry.Key
+            };
 
-            var lenS3 = (int)packet.ReadBits(11);
+            uint lenS3 = packet.ReadBits(11);
             creature.RacialLeader = packet.ReadBit("Racial Leader");
 
             var stringLens = new int[4][];
-            for (var i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
                 stringLens[i] = new int[2];
                 stringLens[i][0] = (int)packet.ReadBits(11);
                 stringLens[i][1] = (int)packet.ReadBits(11);
             }
 
-            var lenS4 = (int)packet.ReadBits(6);
-            var lenS5 = (int)packet.ReadBits(11);
-            var qItemCount = packet.ReadBits(22);
+            uint lenS4 = packet.ReadBits(6);
+            uint lenS5 = packet.ReadBits(11);
+            uint qItemCount = packet.ReadBits(22);
 
             packet.ResetBitReader();
 
             var name = new string[8];
-            for (var i = 0; i < 4; ++i)
+            for (int i = 0; i < 4; ++i)
             {
                 if (stringLens[i][0] > 1)
                     packet.ReadCString("Female Name", i);
@@ -52,44 +55,45 @@ namespace WowPacketParserModule.V5_3_0_16981.Parsers
             }
             creature.Name = name[0];
 
-            creature.Modifier1 = packet.ReadSingle("Modifier 1");
+            creature.HealthModifier = packet.ReadSingle("HealthModifier");
             if (lenS3 > 1)
                 creature.SubName = packet.ReadCString("Sub Name");
 
             creature.Rank = packet.ReadInt32E<CreatureRank>("Rank");
 
-            creature.QuestItems = new uint[qItemCount];
-            for (var i = 0; i < qItemCount; ++i)
-                creature.QuestItems[i] = (uint)packet.ReadInt32<ItemId>("Quest Item", i);
+            //TODO: move to creature_questitems
+            //creature.QuestItems = new uint[qItemCount];
+            for (int i = 0; i < qItemCount; ++i)
+                /*creature.QuestItems[i] = (uint)*/packet.ReadInt32<ItemId>("Quest Item", i);
 
             creature.Type = packet.ReadInt32E<CreatureType>("Type");
-            creature.KillCredits = new uint[2];
-            for (var i = 0; i < 2; ++i)
+            creature.KillCredits = new uint?[2];
+            for (int i = 0; i < 2; ++i)
                 creature.KillCredits[i] = packet.ReadUInt32("Kill Credit", i);
             creature.Family = packet.ReadInt32E<CreatureFamily>("Family");
             if (lenS4 > 1)
                 creature.IconName = packet.ReadCString("Icon Name");
 
-            creature.DisplayIds = new uint[4];
-            creature.DisplayIds[1] = packet.ReadUInt32("Display ID 1");
-            creature.DisplayIds[0] = packet.ReadUInt32("Display ID 0");
-            creature.MovementId = packet.ReadUInt32("Movement ID");
-            creature.DisplayIds[3] = packet.ReadUInt32("Display ID 3");
+            creature.ModelIDs = new uint?[4];
+            creature.ModelIDs[1] = packet.ReadUInt32("CreatureDisplayID", 1);
+            creature.ModelIDs[0] = packet.ReadUInt32("CreatureDisplayID", 0);
+            creature.MovementID = packet.ReadUInt32("MovementID");
+            creature.ModelIDs[3] = packet.ReadUInt32("CreatureDisplayID", 3);
 
             creature.TypeFlags = packet.ReadUInt32E<CreatureTypeFlag>("Type Flags");
             creature.TypeFlags2 = packet.ReadUInt32("Creature Type Flags 2"); // Missing enum
 
             if (lenS5 > 1)
                 packet.ReadCString("string5");
-            creature.DisplayIds[2] = packet.ReadUInt32("Display ID 2");
-            creature.Modifier2 = packet.ReadSingle("Modifier 2");
-            creature.Expansion = packet.ReadUInt32E<ClientType>("Expansion");
+            creature.ModelIDs[2] = packet.ReadUInt32("CreatureDisplayID", 2);
+            creature.ManaModifier = packet.ReadSingle("ManaModifier");
+            creature.ExpUnk = packet.ReadUInt32E<ClientType>("Expansion");
 
             packet.AddSniffData(StoreNameType.Unit, entry.Key, "QUERY_RESPONSE");
 
-            Storage.UnitTemplates.Add((uint)entry.Key, creature, packet.TimeSpan);
+            Storage.CreatureTemplates.Add(creature, packet.TimeSpan);
 
-            var objectName = new ObjectName
+            ObjectName objectName = new ObjectName
             {
                 ObjectType = ObjectType.Unit,
                 Name = creature.Name
@@ -143,7 +147,7 @@ namespace WowPacketParserModule.V5_3_0_16981.Parsers
         public static void HandleRealmQueryResponse(Packet packet)
         {
             packet.ReadUInt32("Realm Id");
-            var byte20 = packet.ReadByte("byte20");
+            packet.ReadByte("byte20");
 
             var bits22 = packet.ReadBits(8);
             var bits278 = packet.ReadBits(8);
@@ -167,7 +171,7 @@ namespace WowPacketParserModule.V5_3_0_16981.Parsers
 
             var bits32 = packet.ReadBits(6);
             packet.StartBitStream(guid, 6, 4, 0);
-            var bit83 = packet.ReadBit();
+            packet.ReadBit();
             packet.StartBitStream(guid, 5, 7);
 
             packet.ReadXORByte(guid, 1);

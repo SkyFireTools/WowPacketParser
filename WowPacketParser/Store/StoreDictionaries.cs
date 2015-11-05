@@ -332,7 +332,7 @@ namespace WowPacketParser.Store
             {
                     return Bag.FirstOrDefault(c => SQLUtil.GetFields<T>()
                         .Where(f => f.Item3.Any(g => g.IsPrimaryKey))
-                        .All(f => (f.Item2.GetValue(c).Equals(f.Item2.GetValue(key)))));
+                        .All(f => (f.Item2.GetValue(c.Item1).Equals(f.Item2.GetValue(key)))));
             }
         }
 

@@ -478,7 +478,7 @@ namespace WowPacketParser.SQL.Builders
         }
 
         //                      entry, <minlevel, maxlevel>
-        private static Dictionary<uint, Tuple<uint, uint>> GetLevels(Dictionary<WowGuid, Unit> units)
+        public static Dictionary<uint, Tuple<uint, uint>> GetLevels(Dictionary<WowGuid, Unit> units)
         {
             if (units.Count == 0)
                 return null;
@@ -499,7 +499,7 @@ namespace WowPacketParser.SQL.Builders
             return result.Count == 0 ? null : result;
         }
 
-        private static readonly HashSet<string> _professionTrainers = new HashSet<string>
+        public static readonly HashSet<string> _professionTrainers = new HashSet<string>
         {
             "Alchemy Trainer", "Armorsmith Trainer", "Armorsmithing Trainer", "Blacksmith Trainer",
             "Blacksmithing Trainer", "Blacksmithing Trainer & Supplies", "Cold Weather Flying Trainer",
@@ -530,7 +530,7 @@ namespace WowPacketParser.SQL.Builders
             "Riding Trainer", "Undead Horse Riding Trainer"
         };
 
-        private static readonly HashSet<string> _classTrainers = new HashSet<string>
+        public static readonly HashSet<string> _classTrainers = new HashSet<string>
         {
             "Druid Trainer", "Portal Trainer", "Portal: Darnassus Trainer",
             "Portal: Ironforge Trainer", "Portal: Orgrimmar Trainer",
@@ -563,7 +563,7 @@ namespace WowPacketParser.SQL.Builders
         }
 
         // Non-WDB data but nevertheless data that should be saved to creature_template
-        [BuilderMethod(Units = true)]
+        /*[BuilderMethod(Units = true)]
         public static string NpcTemplateNonWDB(Dictionary<WowGuid, Unit> units)
         {
             if (ClientVersion.AddedInVersion(ClientType.WarlordsOfDraenor))
@@ -635,16 +635,16 @@ namespace WowPacketParser.SQL.Builders
                     ((template.NpcFlag & (uint) NPCFlags.ProfessionTrainer) == 0 ||
                      (template.NpcFlag & (uint) NPCFlags.ClassTrainer) == 0))
                 {
-                    UnitTemplate unitData;
+                    CreatureTemplate creatureData;
                     var subname = GetSubName((int)unit.Key.GetEntry(), false); // Fall back
-                    if (Storage.UnitTemplates.TryGetValue(unit.Key.GetEntry(), out unitData))
+                    if (Storage.CreatureTemplates.TryGetValue(unit.Key.GetEntry(), out creatureData))
                     {
-                        if (unitData.SubName.Length > 0)
-                            template.NpcFlag |= ProcessNpcFlags(unitData.SubName);
+                        if (creatureData.SubName.Length > 0)
+                            template.NpcFlag |= ProcessNpcFlags(creatureData.SubName);
                         else // If the SubName doesn't exist or is cached, fall back to DB method
                             template.NpcFlag |= ProcessNpcFlags(subname);
                     }
-                    else // In case we have NonWDB data which doesn't have an entry in UnitTemplates
+                    else // In case we have NonWDB data which doesn't have an entry in CreatureTemplates
                         template.NpcFlag |= ProcessNpcFlags(subname);
                 }
 
@@ -653,13 +653,13 @@ namespace WowPacketParser.SQL.Builders
 
             var templatesDb = SQLDatabase.GetDict<uint, UnitTemplateNonWDB>(templates.Keys());
             return SQLUtil.CompareDicts(templates, templatesDb, StoreNameType.Unit);
-        }
+        }*/
 
         // Non-WDB data but nevertheless data that should be saved to creature_template
-        [BuilderMethod(Units = true)]
+        /*[BuilderMethod(Units = true)]
         public static string CreatureDifficultyMisc(Dictionary<WowGuid, Unit> units)
         {
-            if (!ClientVersion.AddedInVersion(ClientType.WarlordsOfDraenor))
+            if (Settings.TargetedDatabase != TargetedDatabase.WarlordsOfDraenor)
                 return string.Empty;
 
             if (units.Count == 0)
@@ -746,23 +746,9 @@ namespace WowPacketParser.SQL.Builders
 
             var templatesDb = SQLDatabase.GetDict<uint, CreatureDifficultyMisc>(templates.Keys(), "Id");
             return SQLUtil.CompareDicts(templates, templatesDb, StoreNameType.Unit, "Id");
-        }
+        }*/
 
-        [BuilderMethod]
-        public static string SpellsX()
-        {
-            if (Storage.SpellsX.IsEmpty())
-                return String.Empty;
-
-            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_template))
-                return string.Empty;
-
-            var entries = Storage.SpellsX.Keys();
-            var spellsXDb = SQLDatabase.GetDict<uint, SpellsX>(entries);
-
-            return SQLUtil.CompareDicts(Storage.SpellsX, spellsXDb, StoreNameType.Unit);
-        }
-
+        
         [BuilderMethod]
         public static string CreatureText()
         {
