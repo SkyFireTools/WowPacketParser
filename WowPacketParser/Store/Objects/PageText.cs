@@ -16,6 +16,6 @@ namespace WowPacketParser.Store.Objects
         public uint? NextPageID;
 
         [DBFieldName("VerifiedBuild")]
-        public int VerifiedBuild = ClientVersion.BuildInt;
+        public int? VerifiedBuild = ClientVersion.BuildInt;
     }
 }

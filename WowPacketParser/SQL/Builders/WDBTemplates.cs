@@ -304,7 +304,7 @@ namespace WowPacketParser.SQL.Builders
                     npcText.Item1.ConvertToDBStruct();
 
                 var entries = Storage.NpcTexts;
-                var templatesDb = SQLDatabase.Get<NpcText>(entries);
+                var templatesDb = SQLDatabase.Get(entries);
 
                 return SQLUtil.Compare(Storage.NpcTexts, templatesDb, StoreNameType.NpcText);
             }
@@ -315,7 +315,7 @@ namespace WowPacketParser.SQL.Builders
                     npcText.Item1.ConvertToDBStruct();
 
                 var entries = Storage.NpcTextsMop;
-                var templatesDb = SQLDatabase.Get<NpcTextMop>(entries);
+                var templatesDb = SQLDatabase.Get(entries);
 
                 return SQLUtil.Compare(Storage.NpcTextsMop, templatesDb, StoreNameType.NpcText);
             }
