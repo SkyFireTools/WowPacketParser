@@ -175,32 +175,34 @@ namespace WowPacketParserModule.V5_4_7_17898.Parsers
         [Parser(Opcode.SMSG_QUERY_NPC_TEXT_RESPONSE)]
         public static void HandleNpcTextUpdate(Packet packet)
         {
-            var npcText = new NpcTextMop();
+            NpcTextMop npcText = new NpcTextMop();
 
-            var size = packet.ReadInt32("Size");
+            int size = packet.ReadInt32("Size");
             var data = packet.ReadBytes(size);
 
-            var pkt = new Packet(data, packet.Opcode, packet.Time, packet.Direction, packet.Number, packet.Writer, packet.FileName);
+            Packet pkt = new Packet(data, packet.Opcode, packet.Time, packet.Direction, packet.Number, packet.Writer, packet.FileName);
             npcText.Probabilities = new float[8];
             npcText.BroadcastTextId = new uint[8];
-            for (var i = 0; i < 8; ++i)
+            for (int i = 0; i < 8; ++i)
                 npcText.Probabilities[i] = pkt.ReadSingle("Probability", i);
-            for (var i = 0; i < 8; ++i)
+            for (int i = 0; i < 8; ++i)
                 npcText.BroadcastTextId[i] = pkt.ReadUInt32("Broadcast Text Id", i);
 
             pkt.ClosePacket(false);
 
             var entry = packet.ReadEntry("Entry");
+            npcText.ID = (uint)entry.Key;
+
             if (entry.Value) // Can be masked
                 return;
 
-            var hasData = packet.ReadBit();
+            Bit hasData = packet.ReadBit();
             if (!hasData)
                 return; // nothing to do
 
             packet.AddSniffData(StoreNameType.NpcText, entry.Key, "QUERY_RESPONSE");
 
-            Storage.NpcTextsMop.Add((uint)entry.Key, npcText, packet.TimeSpan);
+            Storage.NpcTextsMop.Add(npcText, packet.TimeSpan);
         }
 
         [Parser(Opcode.SMSG_GOSSIP_POI)]

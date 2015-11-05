@@ -293,36 +293,34 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string NpcText()
         {
-            if (!Storage.NpcTexts.IsEmpty())
-            {
-                if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_text))
-                    return string.Empty;
+            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_text))
+                return string.Empty;
 
+            if (!Storage.NpcTexts.IsEmpty() && 
+                (Settings.TargetedDatabase == TargetedDatabase.WrathOfTheLichKing || 
+                Settings.TargetedDatabase == TargetedDatabase.Cataclysm))
+            {
                 foreach (var npcText in Storage.NpcTexts)
-                    npcText.Value.Item1.ConvertToDBStruct();
+                    npcText.Item1.ConvertToDBStruct();
 
-                var entries = Storage.NpcTexts.Keys();
-                var templatesDb = SQLDatabase.GetDict<uint, NpcText>(entries, "ID");
+                var entries = Storage.NpcTexts;
+                var templatesDb = SQLDatabase.Get<NpcText>(entries);
 
-                return SQLUtil.CompareDicts(Storage.NpcTexts, templatesDb, StoreNameType.NpcText, "ID");
+                return SQLUtil.Compare(Storage.NpcTexts, templatesDb, StoreNameType.NpcText);
             }
 
-            if (!Storage.NpcTextsMop.IsEmpty())
+            if (!Storage.NpcTextsMop.IsEmpty() && Settings.TargetedDatabase == TargetedDatabase.WarlordsOfDraenor)
             {
-
-                if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.npc_text))
-                    return string.Empty;
-
                 foreach (var npcText in Storage.NpcTextsMop)
-                    npcText.Value.Item1.ConvertToDBStruct();
+                    npcText.Item1.ConvertToDBStruct();
 
-                var entries = Storage.NpcTextsMop.Keys();
-                var templatesDb = SQLDatabase.GetDict<uint, NpcTextMop>(entries, "ID");
+                var entries = Storage.NpcTextsMop;
+                var templatesDb = SQLDatabase.Get<NpcTextMop>(entries);
 
-                return SQLUtil.CompareDicts(Storage.NpcTextsMop, templatesDb, StoreNameType.NpcText, "ID");
+                return SQLUtil.Compare(Storage.NpcTextsMop, templatesDb, StoreNameType.NpcText);
             }
 
-            return String.Empty;
+            return string.Empty;
         }
     }
 }

@@ -220,11 +220,14 @@ namespace WowPacketParser.Parsing.Parsers
         [Parser(Opcode.SMSG_QUERY_NPC_TEXT_RESPONSE)]
         public static void HandleNpcTextUpdate(Packet packet)
         {
-            var npcText = new NpcText();
-
             var entry = packet.ReadEntry("Entry");
             if (entry.Value) // Can be masked
                 return;
+
+            NpcText npcText = new NpcText
+            {
+                ID = (uint)entry.Key
+            };
 
             npcText.Probabilities = new float[8];
             npcText.Texts1 = new string[8];
@@ -232,7 +235,7 @@ namespace WowPacketParser.Parsing.Parsers
             npcText.Languages = new Language[8];
             npcText.EmoteDelays = new uint[8][];
             npcText.EmoteIds = new EmoteType[8][];
-            for (var i = 0; i < 8; i++)
+            for (int i = 0; i < 8; i++)
             {
                 npcText.Probabilities[i] = packet.ReadSingle("Probability", i);
 
@@ -244,7 +247,7 @@ namespace WowPacketParser.Parsing.Parsers
 
                 npcText.EmoteDelays[i] = new uint[3];
                 npcText.EmoteIds[i] = new EmoteType[3];
-                for (var j = 0; j < 3; j++)
+                for (int j = 0; j < 3; j++)
                 {
                     npcText.EmoteDelays[i][j] = packet.ReadUInt32("Emote Delay", i, j);
                     npcText.EmoteIds[i][j] = packet.ReadUInt32E<EmoteType>("Emote ID", i, j);
@@ -253,7 +256,7 @@ namespace WowPacketParser.Parsing.Parsers
 
             packet.AddSniffData(StoreNameType.NpcText, entry.Key, "QUERY_RESPONSE");
 
-            Storage.NpcTexts.Add((uint)entry.Key, npcText, packet.TimeSpan);
+            Storage.NpcTexts.Add(npcText, packet.TimeSpan);
         }
     }
 }
