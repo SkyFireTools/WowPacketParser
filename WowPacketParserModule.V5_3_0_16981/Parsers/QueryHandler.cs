@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using WowPacketParser.Enums;
 using WowPacketParser.Misc;
 using WowPacketParser.Parsing;
@@ -6,6 +7,7 @@ using WowPacketParser.Store.Objects;
 
 namespace WowPacketParserModule.V5_3_0_16981.Parsers
 {
+    [SuppressMessage("ReSharper", "UseObjectOrCollectionInitializer")]
     public static class QueryHandler
     {
         [Parser(Opcode.CMSG_QUERY_CREATURE)]
@@ -447,21 +449,25 @@ namespace WowPacketParserModule.V5_3_0_16981.Parsers
         [Parser(Opcode.SMSG_QUERY_PAGE_TEXT_RESPONSE)]
         public static void HandlePageTextResponse(Packet packet)
         {
-            var pageText = new PageText();
+            uint entry = packet.ReadUInt32("Entry");
 
-            var entry = packet.ReadUInt32("Entry");
-            var hasData = packet.ReadBit();
+            Bit hasData = packet.ReadBit();
             if (!hasData)
                 return; // nothing to do
 
-            var textLen = (int)packet.ReadBits(12);
+            PageText pageText = new PageText();
+            pageText.ID = entry;
+
+            int textLen = (int)packet.ReadBits(12);
+
             packet.ResetBitReader();
+
             pageText.Text = packet.ReadWoWString("Page Text", textLen);
             pageText.NextPageID = packet.ReadUInt32("Next Page");
             packet.ReadUInt32("Entry");
 
             packet.AddSniffData(StoreNameType.PageText, (int)entry, "QUERY_RESPONSE");
-            Storage.PageTexts.Add(entry, pageText, packet.TimeSpan);
+            Storage.PageTexts.Add(pageText, packet.TimeSpan);
         }
 
         [HasSniffData]

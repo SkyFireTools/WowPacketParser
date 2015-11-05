@@ -279,15 +279,15 @@ namespace WowPacketParser.SQL.Builders
         public static string PageText()
         {
             if (Storage.PageTexts.IsEmpty())
-                return String.Empty;
+                return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.page_text))
                 return string.Empty;
 
-            var entries = Storage.PageTexts.Keys();
-            var templatesDb = SQLDatabase.GetDict<uint, PageText>(entries, "ID");
+            var entries = Storage.PageTexts;
+            var templatesDb = SQLDatabase.Get(entries);
 
-            return SQLUtil.CompareDicts(Storage.PageTexts, templatesDb, StoreNameType.PageText, "ID");
+            return SQLUtil.Compare(Storage.PageTexts, templatesDb, StoreNameType.PageText);
         }
 
         [BuilderMethod]

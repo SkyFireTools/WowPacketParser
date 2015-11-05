@@ -78,7 +78,7 @@ namespace WowPacketParser.Store
         public static readonly DataBag<NpcVendor> NpcVendors = new DataBag<NpcVendor>(new List<SQLOutput> { SQLOutput.npc_vendor });
 
         // Page & npc text
-        public static readonly StoreDictionary<uint, PageText> PageTexts = new StoreDictionary<uint, PageText>(new List<SQLOutput> { SQLOutput.page_text });
+        public static readonly DataBag<PageText> PageTexts = new DataBag<PageText>(new List<SQLOutput> { SQLOutput.page_text });
         public static readonly StoreDictionary<uint, NpcText> NpcTexts = new StoreDictionary<uint, NpcText>(new List<SQLOutput> { SQLOutput.npc_text });
         public static readonly StoreDictionary<uint, NpcTextMop> NpcTextsMop = new StoreDictionary<uint, NpcTextMop>(new List<SQLOutput> { SQLOutput.npc_text });
 
