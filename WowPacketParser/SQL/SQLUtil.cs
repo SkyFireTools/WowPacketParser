@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -155,10 +156,10 @@ namespace WowPacketParser.SQL
             //fields.RemoveAll(field => field.Item2.Name == null);
             foreach (var field in Utilities.GetFieldsAndAttributes<T, DBFieldNameAttribute>())
             {
-                if (!field.Value.First().IsVisibleInVersion())
+                if (field.Value.All(f => !f.IsVisible()))
                     continue;
 
-                string fieldName = field.Value.First().ToString();
+                string fieldName = field.Value.Single(f => f.IsVisible()).ToString();
                 fields.Add(new Tuple<string, FieldInfo, List<DBFieldNameAttribute>>(fieldName, field.Key, field.Value));
             }
 
@@ -252,6 +253,13 @@ namespace WowPacketParser.SQL
                         if ((val2 is Array) && val1 == null)
                             continue;
 
+                        if (val1 is string)
+                        {
+                            val1 = ((string)val1).Replace(Environment.NewLine, "\n");
+                            // prevent double escaping
+                            val1 =  ((string)val1).Replace("\"\"", "\"");
+                        }
+                    
                         if (Utilities.EqualValues(val1, val2))
                             field.Item2.SetValue(elem1.Item1, null);
                     }

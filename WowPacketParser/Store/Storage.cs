@@ -68,8 +68,7 @@ namespace WowPacketParser.Store
         // Templates
         public static readonly DataBag<GameObjectTemplate> GameObjectTemplates = new DataBag<GameObjectTemplate>(new List<SQLOutput> { SQLOutput.gameobject_template });
         public static readonly DataBag<ItemTemplate> ItemTemplates = new DataBag<ItemTemplate>(new List<SQLOutput> { SQLOutput.item_template });
-        public static readonly StoreDictionary<uint, QuestTemplate> QuestTemplates = new StoreDictionary<uint, QuestTemplate>(new List<SQLOutput> { SQLOutput.quest_template });
-        public static readonly StoreDictionary<uint, QuestTemplateWod> QuestTemplatesWod = new StoreDictionary<uint, QuestTemplateWod>(new List<SQLOutput> { SQLOutput.quest_template });
+        public static readonly DataBag<QuestTemplate> QuestTemplates = new DataBag<QuestTemplate>(new List<SQLOutput> { SQLOutput.quest_template });
         public static readonly StoreDictionary<uint, QuestInfoObjective> QuestObjectives = new StoreDictionary<uint, QuestInfoObjective>(new List<SQLOutput> { SQLOutput.quest_template });
         public static readonly DataBag<CreatureTemplate> CreatureTemplates = new DataBag<CreatureTemplate>(new List<SQLOutput> { SQLOutput.creature_template });
 
@@ -152,7 +151,6 @@ namespace WowPacketParser.Store
             GameObjectTemplates.Clear();
             ItemTemplates.Clear();
             QuestTemplates.Clear();
-            QuestTemplatesWod.Clear();
             QuestObjectives.Clear();
             CreatureTemplates.Clear();
 

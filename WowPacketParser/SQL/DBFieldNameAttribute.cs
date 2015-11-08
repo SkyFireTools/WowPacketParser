@@ -194,8 +194,11 @@ namespace WowPacketParser.SQL
             _multipleFields = true;
         }
 
-        public bool IsVisibleInVersion()
+        public bool IsVisible()
         {
+            if (Locale != null && Locale != BinaryPacketReader.GetLocale())
+                return false;
+
             TargetedDatabase target = Settings.TargetedDatabase;
 
             if (_addedInVersion.HasValue && !_removedInVersion.HasValue)

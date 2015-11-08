@@ -12,33 +12,18 @@ namespace WowPacketParser.SQL.Builders
     public static class WDBTemplates
     {
         [BuilderMethod]
-        public static string Quest()
+        public static string QuestTemplate()
         {
             if (Storage.QuestTemplates.IsEmpty())
-                return String.Empty;
+                return string.Empty;
 
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.quest_template))
-                return String.Empty;
+                return string.Empty;
 
-            var entries = Storage.QuestTemplates.Keys();
-            var templatesDb = SQLDatabase.GetDict<uint, QuestTemplate>(entries, "Id");
+            var entries = Storage.QuestTemplates;
+            var templatesDb = SQLDatabase.Get(entries);
 
-            return SQLUtil.CompareDicts(Storage.QuestTemplates, templatesDb, StoreNameType.Quest, "Id");
-        }
-
-        [BuilderMethod]
-        public static string QuestWod()
-        {
-            if (Storage.QuestTemplatesWod.IsEmpty())
-                return String.Empty;
-
-            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.quest_template))
-                return String.Empty;
-
-            var entries = Storage.QuestTemplatesWod.Keys();
-            var templatesDb = SQLDatabase.GetDict<uint, QuestTemplateWod>(entries, "Id");
-
-            return SQLUtil.CompareDicts(Storage.QuestTemplatesWod, templatesDb, StoreNameType.Quest, "Id");
+            return SQLUtil.Compare(Storage.QuestTemplates, templatesDb, StoreNameType.Quest);
         }
 
         [BuilderMethod]
