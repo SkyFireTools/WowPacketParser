@@ -524,7 +524,7 @@
     <Compile Include="Store\Objects\ItemTemplate.cs" />
     <Compile Include="Store\Objects\KeyChain.cs" />
     <Compile Include="Store\Objects\LocalesQuest.cs" />
-    <Compile Include="Store\Objects\LocalesQuestObjectives.cs" />
+    <Compile Include="Store\Objects\QuestObjectivesLocale.cs" />
     <Compile Include="Store\Objects\Location.cs" />
     <Compile Include="Store\Objects\ModelData.cs" />
     <Compile Include="Store\Objects\Mount.cs" />
@@ -537,10 +537,12 @@
     <Compile Include="Store\Objects\PageText.cs" />
     <Compile Include="Store\Objects\PhaseXPhaseGroup.cs" />
     <Compile Include="Store\Objects\Player.cs" />
+    <Compile Include="Store\Objects\QuestObjective.cs" />
     <Compile Include="Store\Objects\QuestMisc.cs" />
     <Compile Include="Store\Objects\QuestPOI.cs" />
     <Compile Include="Store\Objects\QuestPOIPoint.cs" />
     <Compile Include="Store\Objects\QuestTemplate.cs" />
+    <Compile Include="Store\Objects\QuestVisualEffect.cs" />
     <Compile Include="Store\Objects\SceneScript.cs" />
     <Compile Include="Store\Objects\SniffData.cs" />
     <Compile Include="Store\Objects\SpellAuraRestrictions.cs" />

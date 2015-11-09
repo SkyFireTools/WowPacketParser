@@ -48,10 +48,10 @@ namespace WowPacketParser.SQL
             new Dictionary<Tuple<uint, string>, LocalesQuest>();
 
         /// <summary>
-        /// Represents a dictionary of <see cref="LocalesQuestObjectives"/> accessed by a tuple of the quest objective id and the locale string.
+        /// Represents a dictionary of <see cref="QuestObjectivesLocale"/> accessed by a tuple of the quest objective id and the locale string.
         /// </summary>
-        public static readonly Dictionary<Tuple<uint, string>, LocalesQuestObjectives> LocalesQuestObjectiveStores =
-            new Dictionary<Tuple<uint, string>, LocalesQuestObjectives>();
+        public static readonly Dictionary<Tuple<uint, string>, QuestObjectivesLocale> QuestObjectiveLocaleStores =
+            new Dictionary<Tuple<uint, string>, QuestObjectivesLocale>();
 
         // MapDifficulty
         /// <summary>
@@ -243,7 +243,7 @@ namespace WowPacketParser.SQL
 
                 while (reader.Read())
                 {
-                    var localesQuestObjectives = new LocalesQuestObjectives();
+                    var localesQuestObjectives = new QuestObjectivesLocale();
 
                     var id = (uint)reader.GetValue(0);
                     var locale = (string)reader.GetValue(1);
@@ -253,7 +253,7 @@ namespace WowPacketParser.SQL
                     localesQuestObjectives.Description = (string)reader.GetValue(4);
                     localesQuestObjectives.VerifiedBuild = Convert.ToInt16(reader.GetValue(5));
 
-                    LocalesQuestObjectiveStores.Add(Tuple.Create(id, locale), localesQuestObjectives);
+                    QuestObjectiveLocaleStores.Add(Tuple.Create(id, locale), localesQuestObjectives);
                 }
             }
         }

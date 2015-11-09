@@ -296,12 +296,13 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
 
             for (int i = 0; i < int2946; ++i)
             {
-                QuestInfoObjective questInfoObjective = new QuestInfoObjective
-                {
-                    QuestId = (uint) id.Key
-                };
-
                 var objectiveId = packet.ReadEntry("Id", i);
+
+                QuestObjective questInfoObjective = new QuestObjective
+                {
+                    ID = (uint)objectiveId.Key,
+                    QuestID = (uint)id.Key
+                };
                 questInfoObjective.Type = packet.ReadByteE<QuestRequirementType>("Quest Requirement Type", i);
                 questInfoObjective.StorageIndex = packet.ReadSByte("StorageIndex", i);
                 questInfoObjective.ObjectID = packet.ReadInt32("ObjectID", i);
@@ -310,16 +311,16 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
                 questInfoObjective.UnkFloat = packet.ReadSingle("Float5", i);
 
                 int int280 = packet.ReadInt32("VisualEffects", i);
-                questInfoObjective.VisualEffectIds = new List<QuestVisualEffect>(int280);
                 for (int j = 0; j < int280; ++j)
                 {
                     QuestVisualEffect questVisualEffect = new QuestVisualEffect
                     {
+                        ID = questInfoObjective.ID,
                         Index = (uint) j,
                         VisualEffect = packet.ReadInt32("VisualEffectId", i, j)
                     };
 
-                    questInfoObjective.VisualEffectIds.Add(questVisualEffect);
+                    Storage.QuestVisualEffects.Add(questVisualEffect, packet.TimeSpan);
                 }
 
                 packet.ResetBitReader();
@@ -329,17 +330,18 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
 
                 if (BinaryPacketReader.GetLocale() != LocaleConstant.enUS && questInfoObjective.Description != string.Empty)
                 {
-                    LocalesQuestObjectives localesQuestObjectives = new LocalesQuestObjectives
+                    QuestObjectivesLocale localesQuestObjectives = new QuestObjectivesLocale
                     {
+                        ID = (uint)objectiveId.Key,
                         QuestId = (uint)id.Key,
                         StorageIndex = questInfoObjective.StorageIndex,
                         Description = questInfoObjective.Description
                     };
 
-                    Storage.LocalesQuestObjectives.Add(Tuple.Create((uint)objectiveId.Key, BinaryPacketReader.GetClientLocale()), localesQuestObjectives, packet.TimeSpan);
+                    Storage.LocalesQuestObjectives.Add(localesQuestObjectives, packet.TimeSpan);
                 }
 
-                Storage.QuestObjectives.Add((uint)objectiveId.Key, questInfoObjective, packet.TimeSpan);
+                Storage.QuestObjectives.Add(questInfoObjective, packet.TimeSpan);
             }
 
             packet.ResetBitReader();

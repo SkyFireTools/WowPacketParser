@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using WowPacketParser.Enums;
+﻿using WowPacketParser.Enums;
 using WowPacketParser.Misc;
 using WowPacketParser.SQL;
 
@@ -302,51 +301,5 @@ namespace WowPacketParser.Store.Objects
 
         [DBFieldName("VerifiedBuild")]
         public int? VerifiedBuild = ClientVersion.BuildInt;
-    }
-
-    [DBTableName("quest_objectives")]
-    public sealed class QuestInfoObjective
-    {
-        [DBFieldName("QuestId")]
-        public uint QuestId;
-
-        [DBFieldName("Type")]
-        public QuestRequirementType Type;
-
-        [DBFieldName("StorageIndex")]
-        public int StorageIndex;
-
-        [DBFieldName("ObjectID")]
-        public int ObjectID;
-
-        [DBFieldName("Amount")]
-        public int Amount;
-
-        [DBFieldName("Flags")]
-        public uint Flags;
-
-        [DBFieldName("UnkFloat")]
-        public float UnkFloat;
-
-        public List<QuestVisualEffect> VisualEffectIds;
-
-        [DBFieldName("Description", LocaleConstant.enUS)]
-        public string Description;
-
-        [DBFieldName("VerifiedBuild")]
-        public int VerifiedBuild = ClientVersion.BuildInt;
-    }
-
-    [DBTableName("quest_visual_effect")]
-    public sealed class QuestVisualEffect
-    {
-        [DBFieldName("Index")]
-        public uint Index;
-
-        [DBFieldName("VisualEffect")]
-        public int VisualEffect;
-
-        [DBFieldName("VerifiedBuild")]
-        public int VerifiedBuild = ClientVersion.BuildInt;
     }
 }

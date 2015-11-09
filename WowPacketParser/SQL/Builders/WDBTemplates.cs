@@ -14,14 +14,13 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string QuestTemplate()
         {
-            if (Storage.QuestTemplates.IsEmpty())
-                return string.Empty;
-
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.quest_template))
                 return string.Empty;
 
-            var entries = Storage.QuestTemplates;
-            var templatesDb = SQLDatabase.Get(entries);
+            if (Storage.QuestTemplates.IsEmpty())
+                return string.Empty;
+
+            var templatesDb = SQLDatabase.Get(Storage.QuestTemplates);
 
             return SQLUtil.Compare(Storage.QuestTemplates, templatesDb, StoreNameType.Quest);
         }
@@ -29,94 +28,46 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string QuestObjective()
         {
-            /*
-            var result = "";
-            if (Storage.QuestObjectives.IsEmpty())
-                return String.Empty;
-
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.quest_template))
-                return String.Empty;
+                return string.Empty;
 
-            var entries = Storage.QuestObjectives.Keys();
-            var templatesDb = SQLDatabase.GetDict<uint, QuestInfoObjective>(entries, "Id");
+            if (Settings.TargetedDatabase == TargetedDatabase.WrathOfTheLichKing ||
+                Settings.TargetedDatabase == TargetedDatabase.Cataclysm)
+                return string.Empty;
 
-            result += SQLUtil.CompareDicts(Storage.QuestObjectives, templatesDb, StoreNameType.QuestObjective, "Id");
+            if (Storage.QuestObjectives.IsEmpty())
+                return string.Empty;
 
-            var rowsIns = new List<SQLInsertRow>();
-            var rowsUpd = new List<SQLUpdateRow>();
+            var templatesDb = SQLDatabase.Get(Storage.QuestObjectives);
 
-            foreach (var questObjectives in Storage.QuestObjectives)
-            {
-                foreach (var visualEffectIds in questObjectives.Value.Item1.VisualEffectIds)
-                {
-                    if (SQLConnector.Enabled)
-                    {
-                        var query = string.Format("SELECT `VisualEffect`, `VerifiedBuild` FROM {0}.quest_visual_effect WHERE `Id`={1} AND `Index`={2};",
-                            Settings.TDBDatabase, questObjectives.Key, visualEffectIds.Index);
+            return SQLUtil.Compare(Storage.QuestObjectives, templatesDb, StoreNameType.QuestObjective);  
+        }
 
-                        using (var reader = SQLConnector.ExecuteQuery(query))
-                        {
-                            if (reader.HasRows) // possible update
-                            {
-                                while (reader.Read())
-                                {
-                                    var row = new SQLUpdateRow();
+        [BuilderMethod]
+        public static string QuestVisualEffect()
+        {
+            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.quest_template))
+                return string.Empty;
 
-                                    if (!Utilities.EqualValues(reader.GetValue(0), visualEffectIds.VisualEffect))
-                                        row.AddValue("VisualEffect", visualEffectIds.VisualEffect);
+            if (Settings.TargetedDatabase == TargetedDatabase.WrathOfTheLichKing ||
+                Settings.TargetedDatabase == TargetedDatabase.Cataclysm)
+                return string.Empty;
 
-                                    if (!Utilities.EqualValues(reader.GetValue(1), questObjectives.Value.Item1.VerifiedBuild))
-                                        row.AddValue("VerifiedBuild", questObjectives.Value.Item1.VerifiedBuild);
+            if (Storage.QuestVisualEffects.IsEmpty())
+                return string.Empty;
 
-                                    row.AddWhere("Id", questObjectives.Key);
-                                    row.AddWhere("Index", visualEffectIds.Index);
+            var templateDb = SQLDatabase.Get(Storage.QuestVisualEffects);
 
-                                    row.Table = "quest_visual_effect";
-
-                                    if (row.ValueCount != 0)
-                                        rowsUpd.Add(row);
-                                }
-                            }
-                            else // insert
-                            {
-                                var row = new SQLInsertRow();
-
-                                row.AddValue("Id", questObjectives.Key);
-                                row.AddValue("Index", visualEffectIds.Index);
-                                row.AddValue("VisualEffect", visualEffectIds.VisualEffect);
-                                row.AddValue("VerifiedBuild", questObjectives.Value.Item1.VerifiedBuild);
-
-                                rowsIns.Add(row);
-                            }
-                        }
-                    }
-                    else // insert
-                    {
-                        var row = new SQLInsertRow();
-
-                        row.AddValue("Id", questObjectives.Key);
-                        row.AddValue("Index", visualEffectIds.Index);
-                        row.AddValue("VisualEffect", visualEffectIds.VisualEffect);
-                        row.AddValue("VerifiedBuild", questObjectives.Value.Item1.VerifiedBuild);
-
-                        rowsIns.Add(row);
-                    }
-                }
-             }
-
-            result += new SQLInsert("quest_visual_effect", rowsIns, 2).Build() + new SQLUpdate(rowsUpd).Build();
-
-            return result;*/
-            return string.Empty;
+            return SQLUtil.Compare(Storage.QuestVisualEffects, templateDb, StoreNameType.None);
         }
 
         [BuilderMethod(Units = true)]
         public static string CreatureTemplate(Dictionary<WowGuid, Unit> units)
         {
-            if (Storage.CreatureTemplates.IsEmpty())
+            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_template))
                 return string.Empty;
 
-            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.creature_template))
+            if (Storage.CreatureTemplates.IsEmpty())
                 return string.Empty;
 
             var templatesDb = SQLDatabase.Get(Storage.CreatureTemplates);
@@ -231,10 +182,10 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string GameObjectTemplate()
         {
-            if (Storage.GameObjectTemplates.IsEmpty())
+            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.gameobject_template))
                 return string.Empty;
 
-            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.gameobject_template))
+            if (Storage.GameObjectTemplates.IsEmpty())
                 return string.Empty;
 
             var templatesDb = SQLDatabase.Get(Storage.GameObjectTemplates);
@@ -254,8 +205,7 @@ namespace WowPacketParser.SQL.Builders
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.item_template))
                 return string.Empty;
 
-            var entries = Storage.ItemTemplates;
-            var templatesDb = SQLDatabase.Get(entries);
+            var templatesDb = SQLDatabase.Get(Storage.ItemTemplates);
 
             return SQLUtil.Compare(Storage.ItemTemplates, templatesDb, StoreNameType.Item);
         }
@@ -263,14 +213,13 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string PageText()
         {
-            if (Storage.PageTexts.IsEmpty())
-                return string.Empty;
-
             if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.page_text))
                 return string.Empty;
 
-            var entries = Storage.PageTexts;
-            var templatesDb = SQLDatabase.Get(entries);
+            if (Storage.PageTexts.IsEmpty())
+                return string.Empty;
+
+            var templatesDb = SQLDatabase.Get(Storage.PageTexts);
 
             return SQLUtil.Compare(Storage.PageTexts, templatesDb, StoreNameType.PageText);
         }
@@ -288,8 +237,7 @@ namespace WowPacketParser.SQL.Builders
                 foreach (var npcText in Storage.NpcTexts)
                     npcText.Item1.ConvertToDBStruct();
 
-                var entries = Storage.NpcTexts;
-                var templatesDb = SQLDatabase.Get(entries);
+                var templatesDb = SQLDatabase.Get(Storage.NpcTexts);
 
                 return SQLUtil.Compare(Storage.NpcTexts, templatesDb, StoreNameType.NpcText);
             }
@@ -299,8 +247,7 @@ namespace WowPacketParser.SQL.Builders
                 foreach (var npcText in Storage.NpcTextsMop)
                     npcText.Item1.ConvertToDBStruct();
 
-                var entries = Storage.NpcTextsMop;
-                var templatesDb = SQLDatabase.Get(entries);
+                var templatesDb = SQLDatabase.Get(Storage.NpcTextsMop);
 
                 return SQLUtil.Compare(Storage.NpcTextsMop, templatesDb, StoreNameType.NpcText);
             }
