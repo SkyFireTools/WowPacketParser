@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using WowPacketParser.Enums;
 using WowPacketParser.Misc;
@@ -196,13 +195,13 @@ namespace WowPacketParser.SQL.Builders
         [BuilderMethod]
         public static string ItemTemplate()
         {
+            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.item_template))
+                return string.Empty;
+
             if (Settings.TargetedDatabase == TargetedDatabase.WarlordsOfDraenor)
                 return string.Empty;
 
             if (Storage.ItemTemplates.IsEmpty())
-                return string.Empty;
-
-            if (!Settings.SQLOutputFlag.HasAnyFlagBit(SQLOutput.item_template))
                 return string.Empty;
 
             var templatesDb = SQLDatabase.Get(Storage.ItemTemplates);
