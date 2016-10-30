@@ -109,7 +109,7 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.CMSG_CONFIRM_RESPEC_WIPE, 0x0275},
             {Opcode.CMSG_CONTACT_LIST, 0x0BB4},
             {Opcode.CMSG_CREATURE_QUERY, 0x0842},// SkyFire
-            {Opcode.CMSG_DB_QUERY_BULK, 0x158D},
+            //{Opcode.CMSG_DB_QUERY_BULK, 0x158D}, Check
             {Opcode.CMSG_DEL_FRIEND, 0x1103},
             {Opcode.CMSG_DEL_IGNORE, 0x0737},
             {Opcode.CMSG_DESTROY_ITEM, 0x0026},
@@ -140,7 +140,7 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.CMSG_GRANT_LEVEL, 0x0662},
             {Opcode.CMSG_GROUP_ASSISTANT_LEADER, 0x1897},// SkyFire
             {Opcode.CMSG_GROUP_DISBAND, 0x1798},
-            {Opcode.CMSG_GROUP_INITIATE_ROLE_POLL, 0x1882},// SkyFire
+            // {Opcode.CMSG_GROUP_INITIATE_ROLE_POLL, 0x1882},// SkyFire Check
             {Opcode.CMSG_GROUP_INVITE, 0x072D},
             {Opcode.CMSG_GROUP_INVITE_RESPONSE, 0x0D61},
             {Opcode.CMSG_GROUP_RAID_CONVERT, 0x032C},
@@ -192,7 +192,7 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.CMSG_INSPECT_HONOR_STATS, 0x0882},// SkyFire
             {Opcode.CMSG_ITEM_REFUND_INFO, 0x1258},// SkyFire
             {Opcode.CMSG_JOIN_CHANNEL, 0x148E},// SkyFire
-            {Opcode.CMSG_LEARN_PREVIEW_TALENTS_PET, 0x077B},
+            //{Opcode.CMSG_LEARN_PREVIEW_TALENTS_PET, 0x077B}, Check out
             {Opcode.CMSG_LEARN_TALENT, 0x02A7},
             {Opcode.CMSG_LEAVE_CHANNEL, 0x042A},// SkyFire
             {Opcode.CMSG_LFG_JOIN, 0x046B},
@@ -217,7 +217,7 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.CMSG_MAIL_CREATE_TEXT_ITEM, 0x1270},
             {Opcode.CMSG_MAIL_DELETE, 0x14E2},
             {Opcode.CMSG_MAIL_MARK_AS_READ, 0x0241},
-            {Opcode.CMSG_MAIL_QUERY_NEXT_TIME, 0x077B},// SkyFire
+            //{Opcode.CMSG_MAIL_QUERY_NEXT_TIME, 0x077B},// SkyFire Check out
             {Opcode.CMSG_MAIL_RETURN_TO_SENDER, 0x1FA8},
             {Opcode.CMSG_MAIL_TAKE_ITEM, 0x1371},
             {Opcode.CMSG_MAIL_TAKE_MONEY, 0x06FA},
@@ -315,7 +315,7 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.CMSG_REPORT_PVP_AFK, 0x06F9},// SkyFire
             {Opcode.CMSG_REQUEST_ACCOUNT_DATA, 0x1D8A},
             {Opcode.CMSG_REQUEST_CEMETERY_LIST, 0x06E4},
-            {Opcode.CMSG_REQUEST_HOTFIX, 0x158D},
+            //{Opcode.CMSG_REQUEST_HOTFIX, 0x158D}, Check
             {Opcode.CMSG_REQUEST_PARTY_MEMBER_STATS, 0x0806},
             {Opcode.CMSG_REQUEST_PVP_OPTIONS_ENABLED, 0x0A22},// SkyFire
             {Opcode.CMSG_REQUEST_PVP_REWARDS, 0x0375},
@@ -325,7 +325,7 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.CMSG_RESET_INSTANCES, 0x0C69},
             {Opcode.CMSG_RESURRECT_RESPONSE, 0x0B0C},
             {Opcode.CMSG_RETURN_TO_GRAVEYARD, 0x12EA},// SkyFire
-            {Opcode.CMSG_ROLE_POLL_BEGIN, 0x1882},
+            //{Opcode.CMSG_ROLE_POLL_BEGIN, 0x1882}, Check
             {Opcode.CMSG_SAVE_CUF_PROFILES, 0x06E6},
             {Opcode.CMSG_SELL_ITEM, 0x1358},
             {Opcode.CMSG_SELECT_FACTION, 0x0027},// SkyFire
@@ -555,7 +555,7 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.SMSG_FLIGHT_SPLINE_SYNC, 0x0063},
             {Opcode.SMSG_FORCED_DEATH_UPDATE, 0x0E8F},
             {Opcode.SMSG_FORCE_SEND_QUEUED_PACKETS, 0x0969},// SkyFire
-            {Opcode.SMSG_FORCE_SET_VEHICLE_REC_ID, 0x149F},
+            //{Opcode.SMSG_FORCE_SET_VEHICLE_REC_ID, 0x149F}, Check
             {Opcode.SMSG_FRIEND_STATUS, 0x0532},
             {Opcode.SMSG_GAMEOBJECT_CUSTOM_ANIM, 0x001F},// SkyFire
             {Opcode.SMSG_GAMEOBJECT_DESPAWN_ANIM, 0x108B},
@@ -581,7 +581,7 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.SMSG_GROUP_DESTROYED, 0x1B27},
             {Opcode.SMSG_GROUP_INVITE, 0x0A8F},
             {Opcode.SMSG_GROUP_LIST, 0x0CBB},
-            {Opcode.SMSG_GROUP_ROLE_POLL_INFORM, 0x1007},// SkyFire
+            //{Opcode.SMSG_GROUP_ROLE_POLL_INFORM, 0x1007},// SkyFire Check
             {Opcode.SMSG_GROUP_SET_LEADER, 0x18BF},
             {Opcode.SMSG_GROUP_SET_ROLE, 0x1E1F},
             {Opcode.SMSG_GUILD_ACHIEVEMENT_DATA, 0x0EF8},// SkyFire
@@ -715,8 +715,8 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.SMSG_MOTD, 0x183B},
             {Opcode.SMSG_MOUNTRESULT, 0x0E0F},// SkyFire
             {Opcode.SMSG_MOUNTSPECIAL_ANIM, 0x003A},// SkyFire
-            {Opcode.SMSG_MOVE_COLLISION_DISABLE, 0x15B8},// SkyFire
-            {Opcode.SMSG_MOVE_COLLISION_ENABLE, 0x1826},// SkyFire
+            //{Opcode.SMSG_MOVE_COLLISION_DISABLE, 0x15B8},// SkyFire Check
+            //{Opcode.SMSG_MOVE_COLLISION_ENABLE, 0x1826},// SkyFire Check
             {Opcode.SMSG_MOVE_FEATHER_FALL, 0x0C60},// SkyFire
             {Opcode.SMSG_MOVE_GRAVITY_DISABLE, 0x159F},// SkyFire
             {Opcode.SMSG_MOVE_GRAVITY_ENABLE, 0x0A27},// SkyFire
@@ -870,7 +870,7 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.SMSG_RESPOND_INSPECT_ACHIEVEMENTS, 0x009E},
             {Opcode.SMSG_RESURRECT_REQUEST, 0x1062},
             {Opcode.SMSG_RESYNC_RUNES, 0x15E3},
-            {Opcode.SMSG_ROLE_POLL_BEGIN, 0x1007},
+            //{Opcode.SMSG_ROLE_POLL_BEGIN, 0x1007}, Check
             {Opcode.SMSG_SELL_ITEM, 0x048E},
             {Opcode.SMSG_SEND_MAIL_RESULT, 0x1A9B},// SkyFire
             {Opcode.SMSG_SEND_UNLEARN_SPELLS, 0x0D51},
@@ -892,7 +892,7 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.SMSG_SET_PLAY_HOVER_ANIM, 0x069F},
             {Opcode.SMSG_SET_PROFICIENCY, 0x1440},
             {Opcode.SMSG_SET_TIMEZONE_INFORMATION, 0x19C1},// SkyFire
-            {Opcode.SMSG_SET_VEHICLE_REC_ID, 0x149F},
+            //{Opcode.SMSG_SET_VEHICLE_REC_ID, 0x149F}, Check
             {Opcode.SMSG_SHOW_TAXI_NODES, 0x1E1A},
             {Opcode.SMSG_SHOW_BANK, 0x0007},
             {Opcode.SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI, 0x15E0},// SkyFire
@@ -919,8 +919,8 @@ namespace WowPacketParser.Enums.Version.V5_4_8_18291
             {Opcode.SMSG_SPELL_START, 0x107A},
             {Opcode.SMSG_SPELL_UPDATE_CHAIN_TARGETS, 0x0D52},
             {Opcode.SMSG_SPIRIT_HEALER_CONFIRM, 0x1EAA},
-            {Opcode.SMSG_SPLINE_MOVE_COLLISION_DISABLE, 0x15B8},// SkyFire
-            {Opcode.SMSG_SPLINE_MOVE_COLLISION_ENABLE, 0x1826},// SkyFire
+            //{Opcode.SMSG_SPLINE_MOVE_COLLISION_DISABLE, 0x15B8},// SkyFire Check
+            //{Opcode.SMSG_SPLINE_MOVE_COLLISION_ENABLE, 0x1826},// SkyFire Check
             {Opcode.SMSG_SPLINE_MOVE_GRAVITY_DISABLE, 0x0845},// SkyFire
             {Opcode.SMSG_SPLINE_MOVE_GRAVITY_ENABLE, 0x0865},// SkyFire
             {Opcode.SMSG_SPLINE_MOVE_ROOT, 0x0728},// SkyFire
